@@ -2,42 +2,34 @@ package org.codecop.socialnetworking;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Optional;
 
 public class SocialNetwork {
 
     public static void main(String[] args) throws IOException {
-        InMemory.initDatabase(); // io
-        final BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-        while (true) {
-            String line = in.readLine(); // io
-            long currentTime = Timer.time(); // io
+        Interpret.it(app());
+    }
 
-            String command = line.trim();
-            if ("quit".equalsIgnoreCase(command)) {
-                break;
-            }
+    static Free<Void> app() {
+        return FreeInMemory.initDatabase(). // io
+                flatMap(ignore -> FreeInput.initInput()). // io
+                flatMap(SocialNetwork::processInput);
+    }
 
-            Optional<PostCommand> p = PureBoundary.posting(command, currentTime); // pure
-            p.ifPresent(c -> InMemory.save(c.message)); // io
+    static Free<Void> processInput(BufferedReader in) {
+        Free<Command> command = //
+            FreeInput.readLine(in). // io
+            flatMap(line -> FreeTimer.time(). // io
+                            map(time -> new Command(line, time)));
+        
+        return command.flatMap(c -> processCommand(in, c));
+    }
 
-            Optional<ReadCommand> r = PureBoundary.reading(command); // pure
-            r.ifPresent(c -> InMemory.queryMessagesFor(c.user). // io
-                             texts(). // pure
-                             forEach(System.out::println)); // io
-
-            Optional<WallCommand> w = PureBoundary.wall(command); // pure
-            w.ifPresent(c -> InMemory.queryWallUsersFor(c.user). // io
-                               users(). // pure
-                               flatMap(name -> InMemory.queryMessagesFor(name).stream()). // io
-                               sorted().map(Message::getUserWithText). // pure
-                               forEach(System.out::println)); // io
-
-            Optional<FollowingCommand> f = PureBoundary.following(command); // pure
-            f.ifPresent(c -> InMemory.saveFollowingFor(c.user, c.other)); // io
+    static Free<Void> processCommand(BufferedReader in, Command command) {
+        if ("quit".equalsIgnoreCase(command.line)) {
+            return Free.nil();
         }
-
+        return Commands.handle(command). //
+                flatMap(ignore -> processInput(in));
     }
 
 }

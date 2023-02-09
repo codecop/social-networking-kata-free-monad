@@ -7,8 +7,19 @@ public class Timer {
 
     private static long currentTime = 0;
 
-    static long time() {
+    static Long time() {
         return ++currentTime;
+    }
+
+}
+
+class FreeTimer {
+
+    static Free<Long> time() {
+        return new FreeTime();
+    }
+
+    static class FreeTime extends Free<Long> {
     }
 
 }

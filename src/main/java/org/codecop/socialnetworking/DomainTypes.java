@@ -3,6 +3,8 @@ package org.codecop.socialnetworking;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -46,7 +48,11 @@ class Message implements Comparable<Message> {
     }
 }
 
-class Messages {
+interface Joining<T> {
+    public T join(T other);
+}
+
+class Messages implements Joining<Messages> {
 
     private final List<Message> messages;
 
@@ -54,17 +60,40 @@ class Messages {
         this.messages = Collections.unmodifiableList(messages);
     }
 
-    public Stream<Message> stream() {
-        return messages.stream();
+    public Optional<String> texts() {
+        if (messages.size() > 0) {
+            String lines = messages.stream(). //
+                    sorted(). //
+                    map(Message::getText). //
+                    collect(Collectors.joining("\n"));
+            return Optional.of(lines);
+        }
+        return Optional.empty();
     }
 
-    public Stream<String> texts() {
-        return stream().sorted().map(Message::getText);
+    public Optional<String> usersWithTexts() {
+        if (messages.size() > 0) {
+            String lines = messages.stream(). //
+                    sorted(). //
+                    map(Message::getUserWithText). //
+                    collect(Collectors.joining("\n"));
+            return Optional.of(lines);
+        }
+        return Optional.empty();
     }
 
-    // public Stream<String> usersWithTexts() {
-    //     return stream().sorted().map(Message::getUserWithText);
-    // }
+    @Override
+    public Messages join(Messages other) {
+        List<Message> newMessages = new ArrayList<>();
+        newMessages.addAll(messages);
+        newMessages.addAll(other.messages);
+        return new Messages(newMessages);
+    }
+
+    public static Messages empty() {
+        return new Messages(Collections.emptyList());
+    }
+
 }
 
 class WallUsers {
