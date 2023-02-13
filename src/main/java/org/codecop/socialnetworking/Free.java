@@ -19,6 +19,7 @@ public interface Free<GENERIC_TYPE extends Generic<HIGHER_TYPE>, HIGHER_TYPE, T>
 
     static <GENERIC_TYPE extends Generic<HIGHER_TYPE>, HIGHER_TYPE, T> //
     Free<GENERIC_TYPE, HIGHER_TYPE, T> liftM(GENERIC_TYPE m) {
+        // TODO implement!
         return null;
     }
 }
