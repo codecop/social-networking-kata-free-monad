@@ -83,22 +83,9 @@ interface DbOps<OUTPUT> extends Generic<OUTPUT> {
 
 }
 
-class DbMonad<T, A> implements Free<DbOps<T>, T, A> {
-    // type DBMonad[A] = Free[DBOps, A]
-
-    @Override
-    public Free<DbOps<T>, T, A> pure(A value) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public <B> Free<DbOps<T>, T, B> flatMap(Function<A, Free<DbOps<T>, T, B>> mapper) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-}
+//class DbMonad<T, A> implements Free<DbOps<T>, T, A> {
+//    // type DBMonad[A] = Free[DBOps, A]
+//}
 
 class DbOpsImplFoo {
     static Free<DbOps<Void>, Void, Void> /*DbMonad<Void>*/ init() {
