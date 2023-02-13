@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * A side effect, impure.
@@ -52,20 +53,81 @@ public class InMemory {
 
 }
 
+interface DbOps<OUTPUT> extends Generic<OUTPUT> {
+
+    class Init implements DbOps<Void> {
+    }
+
+    class Query<T> implements DbOps<T> {
+        // used for QueryMessages, QueryWallUsers
+        final Class<T> type;
+        final String user;
+
+        public Query(Class<T> type, String user) {
+            this.type = type;
+            this.user = user;
+        }
+    }
+
+    class Save<T> implements DbOps<Void> {
+        // used for SaveUser, SaveFollowing
+        final Class<T> type;
+        // key/id is missing in this example
+        final T value;
+
+        public Save(Class<T> type, T value) {
+            this.type = type;
+            this.value = value;
+        }
+    }
+
+}
+
+class DbMonad<T, A> implements Free<DbOps<T>, T, A> {
+    // type DBMonad[A] = Free[DBOps, A]
+
+    @Override
+    public Free<DbOps<T>, T, A> pure(A value) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public <B> Free<DbOps<T>, T, B> flatMap(Function<A, Free<DbOps<T>, T, B>> mapper) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+}
+
+class DbOpsImplFoo {
+    static Free<DbOps<Void>, Void, Void> /*DbMonad<Void>*/ init() {
+        return Free.<DbOps<Void>, Void, Void>liftM(new DbOps.Init());
+    }
+
+    static <T> Free<DbOps<T>, T, T> /*DbMonad<T>*/ query(Class<T> type, String user) {
+        return Free.<DbOps<T>, T, T>liftM(new DbOps.Query<>(type, user));
+    }
+
+    static <T> Free<DbOps<Void>, Void, T> /*DbMonad<Void>*/ save(Class<T> type, T value) {
+        return Free.<DbOps<Void>, Void, T>liftM(new DbOps.Save<>(type, value));
+    }
+}
+
 class FreeInMemory {
 
-    static Free<Void> initDatabase() {
+    static AstNode<Void> initDatabase() {
         return new FreeInitDatabase();
     }
 
-    static class FreeInitDatabase extends Free<Void> {
+    static class FreeInitDatabase extends AstNode<Void> {
     }
 
-    static Free<Messages> queryMessagesFor(String user) {
+    static AstNode<Messages> queryMessagesFor(String user) {
         return new FreeQueryMessages(user);
     }
 
-    static class FreeQueryMessages extends Free<Messages> {
+    static class FreeQueryMessages extends AstNode<Messages> {
         final String user;
 
         public FreeQueryMessages(String user) {
@@ -73,11 +135,11 @@ class FreeInMemory {
         }
     }
 
-    static Free<Void> save(Message message) {
+    static AstNode<Void> save(Message message) {
         return new FreeSaveMessages(message);
     }
 
-    static class FreeSaveMessages extends Free<Void> {
+    static class FreeSaveMessages extends AstNode<Void> {
         final Message message;
 
         public FreeSaveMessages(Message message) {
@@ -85,11 +147,11 @@ class FreeInMemory {
         }
     }
 
-    static Free<WallUsers> queryWallUsersFor(String user) {
+    static AstNode<WallUsers> queryWallUsersFor(String user) {
         return new FreeQueryWall(user);
     }
 
-    static class FreeQueryWall extends Free<WallUsers> {
+    static class FreeQueryWall extends AstNode<WallUsers> {
         final String user;
 
         public FreeQueryWall(String user) {
@@ -97,11 +159,11 @@ class FreeInMemory {
         }
     }
 
-    static Free<Void> saveFollowingFor(String user, String other) {
+    static AstNode<Void> saveFollowingFor(String user, String other) {
         return new FreeSaveFollowing(user, other);
     }
 
-    static class FreeSaveFollowing extends Free<Void> {
+    static class FreeSaveFollowing extends AstNode<Void> {
         final String user;
         final String other;
 

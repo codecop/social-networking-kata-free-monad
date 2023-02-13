@@ -12,11 +12,11 @@ public class Printer {
 
 class FreePrinter {
 
-    public static Free<Void> println(Optional<String> text) {
+    public static AstNode<Void> println(Optional<String> text) {
         return new FreePrintln(text);
     }
 
-    static class FreePrintln extends Free<Void> {
+    static class FreePrintln extends AstNode<Void> {
         final Optional<String> text;
 
         public FreePrintln(Optional<String> text) {

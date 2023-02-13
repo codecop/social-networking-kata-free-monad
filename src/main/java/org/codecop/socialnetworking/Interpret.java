@@ -3,9 +3,9 @@ package org.codecop.socialnetworking;
 import java.io.IOException;
 import java.util.Objects;
 
-import org.codecop.socialnetworking.Free.FreeFlatMapper;
-import org.codecop.socialnetworking.Free.FreeMapper;
-import org.codecop.socialnetworking.Free.FreeValue;
+import org.codecop.socialnetworking.AstNode.FreeFlatMapper;
+import org.codecop.socialnetworking.AstNode.FreeMapper;
+import org.codecop.socialnetworking.AstNode.FreeValue;
 import org.codecop.socialnetworking.FreeInMemory.FreeInitDatabase;
 import org.codecop.socialnetworking.FreeInMemory.FreeQueryMessages;
 import org.codecop.socialnetworking.FreeInMemory.FreeQueryWall;
@@ -22,7 +22,7 @@ import org.codecop.socialnetworking.FreeTimer.FreeTime;
 public abstract class Interpret {
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public static Object it(Free<?> free) throws IOException {
+    public static Object it(AstNode<?> free) throws IOException {
         Objects.requireNonNull(free);
 
         // InMemory
@@ -85,7 +85,7 @@ public abstract class Interpret {
         if (free instanceof FreeFlatMapper) {
             FreeFlatMapper<Object, Object> f = (FreeFlatMapper) free;
             Object before = it(f.before);
-            Free<Object> current = f.mapper.apply(before);
+            AstNode<Object> current = f.mapper.apply(before);
             return it(current);
         }
 

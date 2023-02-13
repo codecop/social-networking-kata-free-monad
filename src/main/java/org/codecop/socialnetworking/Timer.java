@@ -15,11 +15,11 @@ public class Timer {
 
 class FreeTimer {
 
-    static Free<Long> time() {
+    static AstNode<Long> time() {
         return new FreeTime();
     }
 
-    static class FreeTime extends Free<Long> {
+    static class FreeTime extends AstNode<Long> {
     }
 
 }

@@ -4,6 +4,12 @@
 
 [The Social Networking Kata](https://monospacedmonologues.com/2013/04/the-social-networking-kata/)
 
+* users can post messages
+* users can read messages
+* users can follow users
+* users can see walls including following
+
+
 ## Free Monad
 
 ### Question: What is free Monad?

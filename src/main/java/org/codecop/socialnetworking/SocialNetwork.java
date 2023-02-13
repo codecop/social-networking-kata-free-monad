@@ -9,14 +9,14 @@ public class SocialNetwork {
         Interpret.it(app());
     }
 
-    static Free<Void> app() {
+    static AstNode<Void> app() {
         return FreeInMemory.initDatabase(). // io
                 flatMap(ignore -> FreeInput.initInput()). // io
                 flatMap(SocialNetwork::processInput);
     }
 
-    static Free<Void> processInput(BufferedReader in) {
-        Free<Command> command = //
+    static AstNode<Void> processInput(BufferedReader in) {
+        AstNode<Command> command = //
             FreeInput.readLine(in). // io
             flatMap(line -> FreeTimer.time(). // io
                             map(time -> new Command(line, time)));
@@ -24,9 +24,9 @@ public class SocialNetwork {
         return command.flatMap(c -> processCommand(in, c));
     }
 
-    static Free<Void> processCommand(BufferedReader in, Command command) {
+    static AstNode<Void> processCommand(BufferedReader in, Command command) {
         if ("quit".equalsIgnoreCase(command.line)) {
-            return Free.nil();
+            return AstNode.nil();
         }
         return Commands.handle(command). //
                 flatMap(ignore -> processInput(in));

@@ -7,7 +7,7 @@ import java.util.Optional;
  */
 public class Commands {
 
-    static Free<Void> handle(Command command) {
+    static AstNode<Void> handle(Command command) {
         return post(command).orElse( //
                read(command).orElse( //
                wall(command).orElse( //
@@ -15,11 +15,11 @@ public class Commands {
                unknown(command)))));
     }
 
-    static Optional<Free<Void>> post(Command command) {
+    static Optional<AstNode<Void>> post(Command command) {
         if (isPost(command)) {
 
             Message message = parsePostMessage(command);
-            Free<Void> saved = FreeInMemory.save(message); // io
+            AstNode<Void> saved = FreeInMemory.save(message); // io
 
             return Optional.of(saved);
         }
@@ -37,11 +37,11 @@ public class Commands {
         return new Message(user, text, command.atTime);
     }
 
-    public static Optional<Free<Void>> read(Command command) {
+    public static Optional<AstNode<Void>> read(Command command) {
         if (isRead(command)) {
 
             String user = parseReadUser(command);
-            Free<Void> printedTexts = FreeInMemory.queryMessagesFor(user). // io
+            AstNode<Void> printedTexts = FreeInMemory.queryMessagesFor(user). // io
                     map(Messages::texts). //
                     flatMap(FreePrinter::println); // io
 
@@ -58,11 +58,11 @@ public class Commands {
         return command.line;
     }
 
-    public static Optional<Free<Void>> wall(Command command) {
+    public static Optional<AstNode<Void>> wall(Command command) {
         if (isWall(command)) {
 
             String user = parseWallUser(command);
-            Free<Void> printedTexts = FreeInMemory.queryWallUsersFor(user). // io
+            AstNode<Void> printedTexts = FreeInMemory.queryWallUsersFor(user). // io
                     flatMap(Commands::queryMessagesForAllUsers). // mixed
                     map(Messages::usersWithTexts). //
                     flatMap(FreePrinter::println); // io
@@ -80,18 +80,18 @@ public class Commands {
         return command.line.split("\\s+")[0];
     }
 
-    private static Free<Messages> queryMessagesForAllUsers(WallUsers wallUsers) {
+    private static AstNode<Messages> queryMessagesForAllUsers(WallUsers wallUsers) {
         return wallUsers.users(). //
                 map(FreeInMemory::queryMessagesFor). // io
                 // I have a Stream<Free<Messages>> -> Free<Messages>
-                reduce(Free.of(Messages.empty()), new Free.Joiner<>());
+                reduce(AstNode.of(Messages.empty()), new AstNode.Joiner<>());
     }
 
-    public static Optional<Free<Void>> following(Command command) {
+    public static Optional<AstNode<Void>> following(Command command) {
         if (isFollowing(command)) {
 
             Following following = parseFollowing(command);
-            Free<Void> saved = FreeInMemory.saveFollowingFor(following.user, following.other); // io
+            AstNode<Void> saved = FreeInMemory.saveFollowingFor(following.user, following.other); // io
 
             return Optional.of(saved);
         }
@@ -119,7 +119,7 @@ public class Commands {
         }
     }
 
-    public static Free<Void> unknown(Command command) {
+    public static AstNode<Void> unknown(Command command) {
         return FreePrinter.println(Optional.of("Unknown command " + command.line));
     }
 

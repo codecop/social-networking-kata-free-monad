@@ -20,18 +20,18 @@ public class Input {
 
 class FreeInput {
 
-    static Free<BufferedReader> initInput() {
+    static AstNode<BufferedReader> initInput() {
         return new FreeInitStdIn();
     }
 
-    static class FreeInitStdIn extends Free<BufferedReader> {
+    static class FreeInitStdIn extends AstNode<BufferedReader> {
     }
 
-    static Free<String> readLine(BufferedReader in) {
+    static AstNode<String> readLine(BufferedReader in) {
         return new FreeReadStdIn(in);
     }
 
-    static class FreeReadStdIn extends Free<String> {
+    static class FreeReadStdIn extends AstNode<String> {
         final BufferedReader in;
 
         public FreeReadStdIn(BufferedReader in) {
