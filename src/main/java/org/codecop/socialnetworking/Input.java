@@ -18,23 +18,23 @@ public class Input {
     }
 }
 
-class FreeInput {
+interface InputOps {
 
-    static AstNode<BufferedReader> initInput() {
-        return new FreeInitStdIn();
+    static DslCommand<BufferedReader> initInput() {
+        return new InitStdIn();
     }
 
-    static class FreeInitStdIn extends AstNode<BufferedReader> {
+    static class InitStdIn extends DslCommand<BufferedReader> {
     }
 
-    static AstNode<String> readLine(BufferedReader in) {
-        return new FreeReadStdIn(in);
+    static DslCommand<String> readLine(BufferedReader in) {
+        return new ReadStdIn(in);
     }
 
-    static class FreeReadStdIn extends AstNode<String> {
+    static class ReadStdIn extends DslCommand<String> {
         final BufferedReader in;
 
-        public FreeReadStdIn(BufferedReader in) {
+        public ReadStdIn(BufferedReader in) {
             this.in = in;
         }
     }

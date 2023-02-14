@@ -100,60 +100,60 @@ class DbOpsImplFoo {
     }
 }
 
-class FreeInMemory {
+interface InMemoryOps {
 
-    static AstNode<Void> initDatabase() {
-        return new FreeInitDatabase();
+    static DslCommand<Void> initDatabase() {
+        return new InitDatabase();
     }
 
-    static class FreeInitDatabase extends AstNode<Void> {
+    static class InitDatabase extends DslCommand<Void> {
     }
 
-    static AstNode<Messages> queryMessagesFor(String user) {
-        return new FreeQueryMessages(user);
+    static DslCommand<Messages> queryMessagesFor(String user) {
+        return new QueryMessages(user);
     }
 
-    static class FreeQueryMessages extends AstNode<Messages> {
+    static class QueryMessages extends DslCommand<Messages> {
         final String user;
 
-        public FreeQueryMessages(String user) {
+        public QueryMessages(String user) {
             this.user = user;
         }
     }
 
-    static AstNode<Void> save(Message message) {
-        return new FreeSaveMessages(message);
+    static DslCommand<Void> save(Message message) {
+        return new SaveMessages(message);
     }
 
-    static class FreeSaveMessages extends AstNode<Void> {
+    static class SaveMessages extends DslCommand<Void> {
         final Message message;
 
-        public FreeSaveMessages(Message message) {
+        public SaveMessages(Message message) {
             this.message = message;
         }
     }
 
-    static AstNode<WallUsers> queryWallUsersFor(String user) {
-        return new FreeQueryWall(user);
+    static DslCommand<WallUsers> queryWallUsersFor(String user) {
+        return new QueryWall(user);
     }
 
-    static class FreeQueryWall extends AstNode<WallUsers> {
+    static class QueryWall extends DslCommand<WallUsers> {
         final String user;
 
-        public FreeQueryWall(String user) {
+        public QueryWall(String user) {
             this.user = user;
         }
     }
 
-    static AstNode<Void> saveFollowingFor(String user, String other) {
-        return new FreeSaveFollowing(user, other);
+    static DslCommand<Void> saveFollowingFor(String user, String other) {
+        return new SaveFollowing(user, other);
     }
 
-    static class FreeSaveFollowing extends AstNode<Void> {
+    static class SaveFollowing extends DslCommand<Void> {
         final String user;
         final String other;
 
-        public FreeSaveFollowing(String user, String other) {
+        public SaveFollowing(String user, String other) {
             this.user = user;
             this.other = other;
         }

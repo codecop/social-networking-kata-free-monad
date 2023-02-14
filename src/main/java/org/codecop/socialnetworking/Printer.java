@@ -10,16 +10,16 @@ public class Printer {
 
 }
 
-class FreePrinter {
+interface PrinterOps {
 
-    public static AstNode<Void> println(Optional<String> text) {
-        return new FreePrintln(text);
+    public static DslCommand<Void> println(Optional<String> text) {
+        return new Println(text);
     }
 
-    static class FreePrintln extends AstNode<Void> {
+    static class Println extends DslCommand<Void> {
         final Optional<String> text;
 
-        public FreePrintln(Optional<String> text) {
+        public Println(Optional<String> text) {
             this.text = text;
         }
     }

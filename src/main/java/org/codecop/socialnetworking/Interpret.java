@@ -3,18 +3,18 @@ package org.codecop.socialnetworking;
 import java.io.IOException;
 import java.util.Objects;
 
-import org.codecop.socialnetworking.AstNode.FreeFlatMapper;
-import org.codecop.socialnetworking.AstNode.FreeMapper;
-import org.codecop.socialnetworking.AstNode.FreeValue;
-import org.codecop.socialnetworking.FreeInMemory.FreeInitDatabase;
-import org.codecop.socialnetworking.FreeInMemory.FreeQueryMessages;
-import org.codecop.socialnetworking.FreeInMemory.FreeQueryWall;
-import org.codecop.socialnetworking.FreeInMemory.FreeSaveFollowing;
-import org.codecop.socialnetworking.FreeInMemory.FreeSaveMessages;
-import org.codecop.socialnetworking.FreeInput.FreeInitStdIn;
-import org.codecop.socialnetworking.FreeInput.FreeReadStdIn;
-import org.codecop.socialnetworking.FreePrinter.FreePrintln;
-import org.codecop.socialnetworking.FreeTimer.FreeTime;
+import org.codecop.socialnetworking.DslCommand.FreeFlatMapper;
+import org.codecop.socialnetworking.DslCommand.FreeMapper;
+import org.codecop.socialnetworking.DslCommand.FreeValue;
+import org.codecop.socialnetworking.InMemoryOps.InitDatabase;
+import org.codecop.socialnetworking.InMemoryOps.QueryMessages;
+import org.codecop.socialnetworking.InMemoryOps.QueryWall;
+import org.codecop.socialnetworking.InMemoryOps.SaveFollowing;
+import org.codecop.socialnetworking.InMemoryOps.SaveMessages;
+import org.codecop.socialnetworking.InputOps.InitStdIn;
+import org.codecop.socialnetworking.InputOps.ReadStdIn;
+import org.codecop.socialnetworking.PrinterOps.Println;
+import org.codecop.socialnetworking.TimerOps.Time;
 
 /**
  * Evaluate the tree
@@ -22,51 +22,51 @@ import org.codecop.socialnetworking.FreeTimer.FreeTime;
 public abstract class Interpret {
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public static Object it(AstNode<?> free) throws IOException {
+    public static Object it(DslCommand<?> free) throws IOException {
         Objects.requireNonNull(free);
 
         // InMemory
-        if (free instanceof FreeInitDatabase) {
+        if (free instanceof InitDatabase) {
             InMemory.initDatabase();
             return null;
         }
-        if (free instanceof FreeQueryMessages) {
-            FreeQueryMessages f = (FreeQueryMessages) free;
+        if (free instanceof QueryMessages) {
+            QueryMessages f = (QueryMessages) free;
             return InMemory.queryMessagesFor(f.user);
         }
-        if (free instanceof FreeQueryWall) {
-            FreeQueryWall f = (FreeQueryWall) free;
+        if (free instanceof QueryWall) {
+            QueryWall f = (QueryWall) free;
             return InMemory.queryWallUsersFor(f.user);
         }
-        if (free instanceof FreeSaveFollowing) {
-            FreeSaveFollowing f = (FreeSaveFollowing) free;
+        if (free instanceof SaveFollowing) {
+            SaveFollowing f = (SaveFollowing) free;
             InMemory.saveFollowingFor(f.user, f.other);
             return null;
         }
-        if (free instanceof FreeSaveMessages) {
-            FreeSaveMessages f = (FreeSaveMessages) free;
+        if (free instanceof SaveMessages) {
+            SaveMessages f = (SaveMessages) free;
             InMemory.save(f.message);
             return null;
         }
 
         // Input
-        if (free instanceof FreeInitStdIn) {
+        if (free instanceof InitStdIn) {
             return Input.initInput();
         }
-        if (free instanceof FreeReadStdIn) {
-            FreeReadStdIn f = (FreeReadStdIn) free;
+        if (free instanceof ReadStdIn) {
+            ReadStdIn f = (ReadStdIn) free;
             return Input.readLine(f.in);
         }
 
         // Print
-        if (free instanceof FreePrintln) {
-            FreePrintln f = (FreePrintln) free;
+        if (free instanceof Println) {
+            Println f = (Println) free;
             Printer.println(f.text);
             return null;
         }
 
         // Timer
-        if (free instanceof FreeTime) {
+        if (free instanceof Time) {
             return Timer.time();
         }
 
@@ -85,7 +85,7 @@ public abstract class Interpret {
         if (free instanceof FreeFlatMapper) {
             FreeFlatMapper<Object, Object> f = (FreeFlatMapper) free;
             Object before = it(f.before);
-            AstNode<Object> current = f.mapper.apply(before);
+            DslCommand<Object> current = f.mapper.apply(before);
             return it(current);
         }
 

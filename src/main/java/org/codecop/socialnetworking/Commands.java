@@ -7,7 +7,7 @@ import java.util.Optional;
  */
 public class Commands {
 
-    static AstNode<Void> handle(Command command) {
+    static DslCommand<Void> handle(Command command) {
         return post(command).orElse( //
                read(command).orElse( //
                wall(command).orElse( //
@@ -15,11 +15,11 @@ public class Commands {
                unknown(command)))));
     }
 
-    static Optional<AstNode<Void>> post(Command command) {
+    static Optional<DslCommand<Void>> post(Command command) {
         if (isPost(command)) {
 
             Message message = parsePostMessage(command);
-            AstNode<Void> saved = FreeInMemory.save(message); // io
+            DslCommand<Void> saved = InMemoryOps.save(message); // io
 
             return Optional.of(saved);
         }
@@ -37,13 +37,13 @@ public class Commands {
         return new Message(user, text, command.atTime);
     }
 
-    public static Optional<AstNode<Void>> read(Command command) {
+    public static Optional<DslCommand<Void>> read(Command command) {
         if (isRead(command)) {
 
             String user = parseReadUser(command);
-            AstNode<Void> printedTexts = FreeInMemory.queryMessagesFor(user). // io
+            DslCommand<Void> printedTexts = InMemoryOps.queryMessagesFor(user). // io
                     map(Messages::texts). //
-                    flatMap(FreePrinter::println); // io
+                    flatMap(PrinterOps::println); // io
 
             return Optional.of(printedTexts);
         }
@@ -58,14 +58,14 @@ public class Commands {
         return command.line;
     }
 
-    public static Optional<AstNode<Void>> wall(Command command) {
+    public static Optional<DslCommand<Void>> wall(Command command) {
         if (isWall(command)) {
 
             String user = parseWallUser(command);
-            AstNode<Void> printedTexts = FreeInMemory.queryWallUsersFor(user). // io
+            DslCommand<Void> printedTexts = InMemoryOps.queryWallUsersFor(user). // io
                     flatMap(Commands::queryMessagesForAllUsers). // mixed
                     map(Messages::usersWithTexts). //
-                    flatMap(FreePrinter::println); // io
+                    flatMap(PrinterOps::println); // io
 
             return Optional.of(printedTexts);
         }
@@ -80,18 +80,18 @@ public class Commands {
         return command.line.split("\\s+")[0];
     }
 
-    private static AstNode<Messages> queryMessagesForAllUsers(WallUsers wallUsers) {
+    private static DslCommand<Messages> queryMessagesForAllUsers(WallUsers wallUsers) {
         return wallUsers.users(). //
-                map(FreeInMemory::queryMessagesFor). // io
+                map(InMemoryOps::queryMessagesFor). // io
                 // I have a Stream<Free<Messages>> -> Free<Messages>
-                reduce(AstNode.of(Messages.empty()), new AstNode.Joiner<>());
+                reduce(DslCommand.of(Messages.empty()), new DslCommand.Joiner<>());
     }
 
-    public static Optional<AstNode<Void>> following(Command command) {
+    public static Optional<DslCommand<Void>> following(Command command) {
         if (isFollowing(command)) {
 
             Following following = parseFollowing(command);
-            AstNode<Void> saved = FreeInMemory.saveFollowingFor(following.user, following.other); // io
+            DslCommand<Void> saved = InMemoryOps.saveFollowingFor(following.user, following.other); // io
 
             return Optional.of(saved);
         }
@@ -119,8 +119,8 @@ public class Commands {
         }
     }
 
-    public static AstNode<Void> unknown(Command command) {
-        return FreePrinter.println(Optional.of("Unknown command " + command.line));
+    public static DslCommand<Void> unknown(Command command) {
+        return PrinterOps.println(Optional.of("Unknown command " + command.line));
     }
 
 }

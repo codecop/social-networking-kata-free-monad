@@ -13,13 +13,13 @@ public class Timer {
 
 }
 
-class FreeTimer {
+interface TimerOps {
 
-    static AstNode<Long> time() {
-        return new FreeTime();
+    static DslCommand<Long> time() {
+        return new Time();
     }
 
-    static class FreeTime extends AstNode<Long> {
+    static class Time extends DslCommand<Long> {
     }
 
 }
