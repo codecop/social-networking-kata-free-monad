@@ -12,8 +12,8 @@ public class Printer {
 
 interface PrinterOps {
 
-    public static DslCommand<Void> println(Optional<String> text) {
-        return new Println(text);
+    public static Unrestricted<DslCommand<Void>> println(Optional<String> text) {
+        return Unrestricted.liftF(new Println(text));
     }
 
     static class Println extends DslCommand<Void> {

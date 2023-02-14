@@ -36,25 +36,4 @@ abstract class DslCommand<T> implements Transformable<T> {
         }
     }
 
-    public <U> DslCommand<U> flatMap(Function<T, DslCommand<U>> mapper) {
-        return new FreeFlatMapper<>(this, mapper);
-    }
-
-    static class FreeFlatMapper<T, U> extends DslCommand<U> {
-        final DslCommand<T> before;
-        final Function<T, DslCommand<U>> mapper;
-
-        public FreeFlatMapper(DslCommand<T> before, Function<T, DslCommand<U>> mapper) {
-            this.before = before;
-            this.mapper = mapper;
-        }
-    }
-
-    static class Joiner<T extends Joining<T>> implements BinaryOperator<DslCommand<T>> {
-        @Override
-        public DslCommand<T> apply(DslCommand<T> a, DslCommand<T> b) {
-            return b.flatMap(bs -> a.map(as -> as.join(bs)));
-        }
-    }
-
 }

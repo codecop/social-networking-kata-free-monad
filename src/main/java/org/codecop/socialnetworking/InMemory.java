@@ -102,15 +102,15 @@ class DbOpsImplFoo {
 
 interface InMemoryOps {
 
-    static DslCommand<Void> initDatabase() {
-        return new InitDatabase();
+    static Unrestricted<DslCommand<Void>> initDatabase() {
+        return Unrestricted.liftF(new InitDatabase());
     }
 
     static class InitDatabase extends DslCommand<Void> {
     }
 
-    static DslCommand<Messages> queryMessagesFor(String user) {
-        return new QueryMessages(user);
+    static Unrestricted<DslCommand<Messages>> queryMessagesFor(String user) {
+        return Unrestricted.liftF(new QueryMessages(user));
     }
 
     static class QueryMessages extends DslCommand<Messages> {
@@ -121,8 +121,8 @@ interface InMemoryOps {
         }
     }
 
-    static DslCommand<Void> save(Message message) {
-        return new SaveMessages(message);
+    static Unrestricted<DslCommand<Void>> save(Message message) {
+        return Unrestricted.liftF(new SaveMessages(message));
     }
 
     static class SaveMessages extends DslCommand<Void> {
@@ -133,8 +133,8 @@ interface InMemoryOps {
         }
     }
 
-    static DslCommand<WallUsers> queryWallUsersFor(String user) {
-        return new QueryWall(user);
+    static Unrestricted<DslCommand<WallUsers>> queryWallUsersFor(String user) {
+        return Unrestricted.liftF(new QueryWall(user));
     }
 
     static class QueryWall extends DslCommand<WallUsers> {
@@ -145,8 +145,8 @@ interface InMemoryOps {
         }
     }
 
-    static DslCommand<Void> saveFollowingFor(String user, String other) {
-        return new SaveFollowing(user, other);
+    static Unrestricted<DslCommand<Void>> saveFollowingFor(String user, String other) {
+        return Unrestricted.liftF(new SaveFollowing(user, other));
     }
 
     static class SaveFollowing extends DslCommand<Void> {

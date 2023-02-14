@@ -22,7 +22,7 @@ import org.codecop.socialnetworking.TimerOps.Time;
 public abstract class Interpret {
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public static Object it(DslCommand<?> free) throws IOException {
+    public static Object it(Unrestricted<DslCommand<?>> free) throws IOException {
         Objects.requireNonNull(free);
 
         // InMemory
