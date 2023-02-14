@@ -1,36 +1,38 @@
 package org.codecop.socialnetworking;
 
-import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
+/**
+ * The command is only a functor.
+ */
 abstract class DslCommand<T> implements Transformable<T> {
 
     public static <T> DslCommand<T> of(T value) { // "pure"
-        return new FreeValue<>(value);
+        return new DslCommandValue<>(value);
     }
 
     public static DslCommand<Void> nil() {
-        return new FreeValue<>(null);
+        return new DslCommandValue<>(null);
     }
 
-    static class FreeValue<T> extends DslCommand<T> {
+    static class DslCommandValue<T> extends DslCommand<T> {
         final T value;
 
-        public FreeValue(T value) {
+        public DslCommandValue(T value) {
             this.value = value;
         }
     }
 
     @Override
     public <U> DslCommand<U> map(Function<? super T, ? extends U> mapper) {
-        return new FreeMapper<>(this, mapper);
+        return new DslCommandMapper<>(this, mapper);
     }
 
-    static class FreeMapper<T, U> extends DslCommand<U> {
+    static class DslCommandMapper<T, U> extends DslCommand<U> {
         final DslCommand<T> before;
         final Function<? super T, ? extends U> mapper;
 
-        public FreeMapper(DslCommand<T> before, Function<? super T, ? extends U> mapper) {
+        public DslCommandMapper(DslCommand<T> before, Function<? super T, ? extends U> mapper) {
             this.before = before;
             this.mapper = mapper;
         }

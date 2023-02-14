@@ -9,14 +9,14 @@ public class SocialNetwork {
         Interpret.it(app());
     }
 
-    static Unrestricted<DslCommand<Void>> app() {
+    static Unrestricted<DslCommand<Void>, Void> app() {
         return InMemoryOps.initDatabase(). // io
                 flatMap(ignore -> InputOps.initInput()). // io
                 flatMap(SocialNetwork::processInput);
     }
 
-    static Unrestricted<DslCommand<Void>> processInput(BufferedReader in) {
-        Unrestricted<DslCommand<Command>> command = //
+    static Unrestricted<DslCommand<Void>, Void> processInput(BufferedReader in) {
+        Unrestricted<DslCommand<Command>, Command> command = //
             InputOps.readLine(in). // io
             flatMap(line -> TimerOps.time(). // io
                             map(time -> new Command(line, time)));
@@ -24,7 +24,7 @@ public class SocialNetwork {
         return command.flatMap(c -> processCommand(in, c));
     }
 
-    static Unrestricted<DslCommand<Void>> processCommand(BufferedReader in, Command command) {
+    static Unrestricted<DslCommand<Void>, Void> processCommand(BufferedReader in, Command command) {
         if ("quit".equalsIgnoreCase(command.line)) {
             return Unrestricted.liftF(DslCommand.nil());
         }

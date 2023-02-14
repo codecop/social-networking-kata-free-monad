@@ -1,11 +1,12 @@
 package org.codecop.socialnetworking;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Objects;
 
-import org.codecop.socialnetworking.DslCommand.FreeFlatMapper;
-import org.codecop.socialnetworking.DslCommand.FreeMapper;
-import org.codecop.socialnetworking.DslCommand.FreeValue;
+import org.codecop.socialnetworking.DslCommand.DslCommandMapper;
+import org.codecop.socialnetworking.DslCommand.DslCommandValue;
 import org.codecop.socialnetworking.InMemoryOps.InitDatabase;
 import org.codecop.socialnetworking.InMemoryOps.QueryMessages;
 import org.codecop.socialnetworking.InMemoryOps.QueryWall;
@@ -21,75 +22,113 @@ import org.codecop.socialnetworking.TimerOps.Time;
  */
 public abstract class Interpret {
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public static Object it(Unrestricted<DslCommand<?>> free) throws IOException {
+    // @SuppressWarnings({ "rawtypes", "unchecked" })
+    public static Object it(Unrestricted<DslCommand<?>, ?> free) {
         Objects.requireNonNull(free);
+        return free.map(dslCommand -> {
+            matchCommand((DslCommand<?>)dslCommand);
+        });
 
+        //        if (dslCommand instanceof FreeFlatMapper) {
+        //            FreeFlatMapper<Object, Object> f = (FreeFlatMapper) dslCommand;
+        //            Object before = it(f.before);
+        //            DslCommand<Object> current = f.mapper.apply(before);
+        //            return matchCommand(current);
+        //        }
+
+    }
+
+    private static Object matchCommand(DslCommand<?> dslCommand) {
         // InMemory
-        if (free instanceof InitDatabase) {
-            InMemory.initDatabase();
-            return null;
+        if (dslCommand instanceof InitDatabase) {
+            return handleInitDb();
         }
-        if (free instanceof QueryMessages) {
-            QueryMessages f = (QueryMessages) free;
-            return InMemory.queryMessagesFor(f.user);
+        if (dslCommand instanceof QueryMessages) {
+            return handleQueryMessages((QueryMessages) dslCommand);
         }
-        if (free instanceof QueryWall) {
-            QueryWall f = (QueryWall) free;
-            return InMemory.queryWallUsersFor(f.user);
+        if (dslCommand instanceof QueryWall) {
+            return handleQueryWall((QueryWall) dslCommand);
         }
-        if (free instanceof SaveFollowing) {
-            SaveFollowing f = (SaveFollowing) free;
-            InMemory.saveFollowingFor(f.user, f.other);
-            return null;
+        if (dslCommand instanceof SaveFollowing) {
+            return handleSaveFollowing((SaveFollowing) dslCommand);
         }
-        if (free instanceof SaveMessages) {
-            SaveMessages f = (SaveMessages) free;
-            InMemory.save(f.message);
-            return null;
+        if (dslCommand instanceof SaveMessages) {
+            return handleSaveMessages((SaveMessages) dslCommand);
         }
 
         // Input
-        if (free instanceof InitStdIn) {
-            return Input.initInput();
+        if (dslCommand instanceof InitStdIn) {
+            return handleInitInput();
         }
-        if (free instanceof ReadStdIn) {
-            ReadStdIn f = (ReadStdIn) free;
-            return Input.readLine(f.in);
+        if (dslCommand instanceof ReadStdIn) {
+            return handleReadLine((ReadStdIn) dslCommand);
         }
 
         // Print
-        if (free instanceof Println) {
-            Println f = (Println) free;
-            Printer.println(f.text);
-            return null;
+        if (dslCommand instanceof Println) {
+            return handlePrint((Println) dslCommand);
         }
 
         // Timer
-        if (free instanceof Time) {
-            return Timer.time();
+        if (dslCommand instanceof Time) {
+            return handleTime();
         }
 
         // ---
 
-        if (free instanceof FreeValue) {
-            FreeValue<?> f = (FreeValue<?>) free;
-            return f.value;
+        if (dslCommand instanceof DslCommandValue) {
+            return handleValue((DslCommandValue<?>) dslCommand);
         }
 
-        if (free instanceof FreeMapper) {
-            FreeMapper<Object, Object> f = (FreeMapper) free;
-            Object before = it(f.before);
-            return f.mapper.apply(before);
-        }
-        if (free instanceof FreeFlatMapper) {
-            FreeFlatMapper<Object, Object> f = (FreeFlatMapper) free;
-            Object before = it(f.before);
-            DslCommand<Object> current = f.mapper.apply(before);
-            return it(current);
-        }
+        throw new IllegalArgumentException(dslCommand.getClass().getName());
+    }
 
-        throw new IllegalArgumentException(free.getClass().getName());
+    private static Void handleInitDb() {
+        InMemory.initDatabase();
+        return null;
+    }
+
+    private static Messages handleQueryMessages(QueryMessages f) {
+        return InMemory.queryMessagesFor(f.user);
+    }
+
+    private static WallUsers handleQueryWall(QueryWall f) {
+        return InMemory.queryWallUsersFor(f.user);
+    }
+
+    private static Void handleSaveFollowing(SaveFollowing f) {
+        InMemory.saveFollowingFor(f.user, f.other);
+        return null;
+    }
+
+    private static Void handleSaveMessages(SaveMessages f) {
+        InMemory.save(f.message);
+        return null;
+    }
+
+    private static BufferedReader handleInitInput() {
+        return Input.initInput();
+    }
+
+    private static String handleReadLine(ReadStdIn f) {
+        try {
+            return Input.readLine(f.in);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    private static Void handlePrint(Println f) {
+        Printer.println(f.text);
+        return null;
+    }
+
+    private static Long handleTime() {
+        return Timer.time();
+    }
+
+    private static <T> T handleValue(DslCommandValue<T> f) {
+        return f.value;
     }
 
 }

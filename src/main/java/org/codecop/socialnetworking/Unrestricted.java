@@ -1,6 +1,5 @@
 package org.codecop.socialnetworking;
 
-import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
 /**
@@ -8,37 +7,33 @@ import java.util.function.Function;
  * 
  * @See "https://medium.com/modernnerd-code/dsls-with-the-free-monad-in-java-8-part-i-701408e874f8"
  */
-public class Unrestricted<T> {
+public class Unrestricted<T extends Transformable<U>, U> {
 
-    static <TRANSFORMABLE extends Transformable<V>, V> Unrestricted<TRANSFORMABLE> liftF(TRANSFORMABLE t) {
-        return null;
+    private final T value;
+
+    private Unrestricted(T value) {
+        this.value = value;
     }
 
-    public <U> Unrestricted<U> map(Function<? super T, ? extends U> mapper) {
-        return new FreeMapper<>(this, mapper);
-    }
-    
-    public <U> Unrestricted<U> flatMap(Function<T, Unrestricted<U>> mapper) {
-        return new FreeFlatMapper<>(this, mapper);
+    public static <T extends Transformable<U>, U> Unrestricted<T, U> liftF(T value) {
+        return new Unrestricted<>(value);
     }
 
-//    static class FreeFlatMapper<T, U> extends DslCommand<U> {
-//        final DslCommand<T> before;
-//        final Function<T, DslCommand<U>> mapper;
-//
-//        public FreeFlatMapper(DslCommand<T> before, Function<T, DslCommand<U>> mapper) {
-//            this.before = before;
-//            this.mapper = mapper;
-//        }
-//    }
-
-    static class Joiner<T extends Joining<T>> implements BinaryOperator<DslCommand<T>> {
-        @Override
-        public DslCommand<T> apply(DslCommand<T> a, DslCommand<T> b) {
-            return b.flatMap(bs -> a.map(as -> as.join(bs)));
-        }
+    public <R extends Transformable<S>, S> Unrestricted<R, S> map(Function<T, R> mapper) {
+        return new Unrestricted<>(mapper.apply(value));
     }
-    
+
+    public <R extends Transformable<S>, S> Unrestricted<R, S> flatMap(Function<? super T, Unrestricted<R, S>> mapper) {
+        return mapper.apply(value);
+    }
+
+    //    public static class Joiner<T extends Joining<T>> implements BinaryOperator<DslCommand<T>> {
+    //        @Override
+    //        public DslCommand<T> apply(DslCommand<T> a, DslCommand<T> b) {
+    //            return b.flatMap(bs -> a.map(as -> as.join(bs)));
+    //        }
+    //    }
+
 }
 
 /**
