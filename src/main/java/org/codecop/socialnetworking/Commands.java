@@ -63,12 +63,15 @@ public class Commands {
         if (isWall(command)) {
 
             String user = parseWallUser(command);
-            Unrestricted<DslCommand<WallUsers>> wallUsersCmd = InMemoryOps.queryWallUsersFor(user); // IO
-            Unrestricted<DslCommand<Messages>> messagesCmd = wallUsersCmd.flatMap(wu -> queryMessagesForAllUsers(wu)); // mixed
-            Unrestricted<DslCommand<Optional<String>>> textCmd = messagesCmd.mapF(Messages::usersWithTexts); // <Messages, Optional<String>>
-            Unrestricted<DslCommand<Void>> printedTexts = textCmd.flatMap(PrinterOps::println); // IO
+            Unrestricted<DslCommand<WallUsers>> uWallUsersCmd = InMemoryOps.queryWallUsersFor(user); // IO
+            Unrestricted<DslCommand<Unrestricted<DslCommand<Messages>>>> messagesCmd = uWallUsersCmd.map(Commands::queryMessagesForAllUsers); // mixed
+            Unrestricted<DslCommand<Unrestricted<DslCommand<Optional<String>>>>> textCmd = 
+                    messagesCmd.<Unrestricted<DslCommand<Messages>>, Unrestricted<DslCommand<Optional<String>>>>mapF(m -> m.<Messages, Optional<String>>mapF(Messages::usersWithTexts)); 
+            Unrestricted<DslCommand<Unrestricted<DslCommand<Void>>>> printedTexts = 
+                    textCmd.<Unrestricted<DslCommand<Optional<String>>>, Unrestricted<DslCommand<Void>>>mapF(m -> m.flatMap(PrinterOps::println)); // IO
 
-            return Optional.of(printedTexts);
+            Unrestricted casts = printedTexts;
+            return Optional.of(casts);
         }
         return Optional.empty();
     }

@@ -1,7 +1,6 @@
 package org.codecop.socialnetworking;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 
 public class SocialNetwork {
 
@@ -15,16 +14,20 @@ public class SocialNetwork {
                 flatMap(inputCmd -> SocialNetwork.processInput(inputCmd));
     }
 
-    static DslCommand<Unrestricted<DslCommand<Void>>> processInput(DslCommand<BufferedReader> inputCmd) {
+    static Unrestricted<DslCommand<Void>> processInput(DslCommand<BufferedReader> inputCmd) {
         DslCommand<Unrestricted<DslCommand<String>>> readLineCmd = inputCmd.map(InputOps::readLine); // IO
         DslCommand<Unrestricted<DslCommand<Command>>> command = // 
                 readLineCmd.map(uLineCmd -> //
                     uLineCmd.flatMap(lineCmd -> // 
                         TimerOps.time(). // IO
                         flatMap(timeCmd -> createCommand(timeCmd, lineCmd))));
-        return command.map(uCommand -> //
-            uCommand.flatMap(commandCmd -> 
-                processCommand(inputCmd, commandCmd)));
+        DslCommand<Unrestricted<DslCommand<Unrestricted<DslCommand<Void>>>>> wtf = //
+                command.map(uCommand -> //
+                    uCommand.map(commandCmd -> 
+                        processCommand(inputCmd, commandCmd)));
+
+        Unrestricted casts = Unrestricted.liftF(wtf);
+        return casts;
     }
     
     static Unrestricted<DslCommand<Command>> createCommand(DslCommand<Long> timeCmd, DslCommand<String> lineCmd) {
@@ -33,17 +36,19 @@ public class SocialNetwork {
     }
 
     static DslCommand<Unrestricted<DslCommand<Void>>> processCommand(DslCommand<BufferedReader> inputCmd, DslCommand<Command> commandCmd) {
-        return commandCmd.map(command -> {
-            if ("quit".equalsIgnoreCase(command.line)) {
-                return Unrestricted.liftF(DslCommand.nil());
-            }
-            return x(inputCmd, command);
-        });
+        return commandCmd.map(command -> processCommand(inputCmd, command));
     }
 
-    private static DslCommand<Unrestricted<Object>> x(DslCommand<BufferedReader> inputCmd, Command command) {
-        return Commands.handle(command). //
-                flatMap(ignore -> processInput(inputCmd));
+    private static Unrestricted<DslCommand<Void>> processCommand(DslCommand<BufferedReader> inputCmd, Command command) {
+        if ("quit".equalsIgnoreCase(command.line)) {
+            return Unrestricted.liftF(DslCommand.nil());
+        }
+        Unrestricted<DslCommand<Void>> result = Commands.handle(command);
+        Unrestricted<DslCommand<Void>> remaining = 
+                result.flatMap(ignore -> //
+                        processInput(inputCmd));
+        
+        return remaining;
     }
 
 }
