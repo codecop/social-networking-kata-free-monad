@@ -20,14 +20,14 @@ public class Input {
 
 interface InputOps {
 
-    static Unrestricted<DslCommand<BufferedReader>, BufferedReader> initInput() {
+    static Unrestricted<DslCommand<BufferedReader>> initInput() {
         return Unrestricted.liftF(new InitStdIn());
     }
 
     static class InitStdIn extends DslCommand<BufferedReader> {
     }
 
-    static Unrestricted<DslCommand<String>, String> readLine(BufferedReader in) {
+    static Unrestricted<DslCommand<String>> readLine(BufferedReader in) {
         return Unrestricted.liftF(new ReadStdIn(in));
     }
 

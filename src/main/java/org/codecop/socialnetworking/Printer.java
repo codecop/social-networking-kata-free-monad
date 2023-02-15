@@ -12,7 +12,7 @@ public class Printer {
 
 interface PrinterOps {
 
-    public static Unrestricted<DslCommand<Void>, Void> println(Optional<String> text) {
+    public static Unrestricted<DslCommand<Void>> println(Optional<String> text) {
         return Unrestricted.liftF(new Println(text));
     }
 

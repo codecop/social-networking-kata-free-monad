@@ -7,24 +7,31 @@ import java.util.function.Function;
  * 
  * @See "https://medium.com/modernnerd-code/dsls-with-the-free-monad-in-java-8-part-i-701408e874f8"
  */
-public class Unrestricted<T extends Transformable<U>, U> {
+public class Unrestricted<TRANSFORMABLE> {
 
-    private final T value;
+    private final TRANSFORMABLE transformable;
 
-    private Unrestricted(T value) {
-        this.value = value;
+    /**
+     * @param transformable a Transformable of some type.
+     */
+    private Unrestricted(TRANSFORMABLE transformable) {
+        if ((transformable instanceof Transformable)) {
+            throw new ClassCastException(Transformable.class.getName());
+        }
+        this.transformable = transformable;
     }
 
-    public static <T extends Transformable<U>, U> Unrestricted<T, U> liftF(T value) {
-        return new Unrestricted<>(value);
+    public static <T> Unrestricted<T> liftF(T transformable) {
+        return new Unrestricted<>(transformable);
     }
 
-    public <R extends Transformable<S>, S> Unrestricted<R, S> map(Function<T, R> mapper) {
-        return new Unrestricted<>(mapper.apply(value));
+    public <R> Unrestricted<R> map(Function<TRANSFORMABLE, R> mapper) {
+        // R must also be Transformable 
+        return new Unrestricted<>(mapper.apply(transformable));
     }
 
-    public <R extends Transformable<S>, S> Unrestricted<R, S> flatMap(Function<? super T, Unrestricted<R, S>> mapper) {
-        return mapper.apply(value);
+    public <R> Unrestricted<R> flatMap(Function<? super TRANSFORMABLE, Unrestricted<R>> mapper) {
+        return mapper.apply(transformable);
     }
 
     //    public static class Joiner<T extends Joining<T>> implements BinaryOperator<DslCommand<T>> {

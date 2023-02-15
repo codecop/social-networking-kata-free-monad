@@ -15,7 +15,7 @@ public class Timer {
 
 interface TimerOps {
 
-    static Unrestricted<DslCommand<Long>, Long> time() {
+    static Unrestricted<DslCommand<Long>> time() {
         return Unrestricted.liftF(new Time());
     }
 

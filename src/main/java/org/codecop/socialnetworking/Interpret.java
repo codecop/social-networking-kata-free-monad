@@ -23,7 +23,7 @@ import org.codecop.socialnetworking.TimerOps.Time;
 public abstract class Interpret {
 
     // @SuppressWarnings({ "rawtypes", "unchecked" })
-    public static Object it(Unrestricted<DslCommand<?>, ?> free) {
+    public static Object it(Unrestricted<DslCommand<?>> free) {
         Objects.requireNonNull(free);
         return free.map(dslCommand -> {
             matchCommand((DslCommand<?>)dslCommand);
