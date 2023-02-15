@@ -9,7 +9,7 @@ import java.util.function.Function;
  */
 public class Unrestricted<TRANSFORMABLE> {
 
-    private final TRANSFORMABLE transformable;
+    final TRANSFORMABLE transformable;
 
     /**
      * @param transformable a Transformable of some type.
@@ -41,7 +41,10 @@ public class Unrestricted<TRANSFORMABLE> {
     }
 
     public <R> Unrestricted<R> flatMap(Function<? super TRANSFORMABLE, Unrestricted<R>> mapper) {
-        return new UnrestrictedNode<R>(mapper, this);
+        // return new UnrestrictedNode<R>(mapper, this);
+        // TODO temp hack to eval non lazy hack 
+        DslCommand result = Interpret.evalCommand((DslCommand) this.transformable);
+        return mapper.apply((TRANSFORMABLE) result);
     }
 
     static class UnrestrictedNode<R> extends Unrestricted<R> {
@@ -55,7 +58,7 @@ public class Unrestricted<TRANSFORMABLE> {
             this.previous = previous;
         }
 
-        // return mapper.apply(transformable);
+        // return mapper.apply(previous);
 
         @Override
         public String toString() {

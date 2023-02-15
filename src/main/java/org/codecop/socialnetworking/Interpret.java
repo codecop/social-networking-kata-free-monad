@@ -18,86 +18,93 @@ import org.codecop.socialnetworking.TimerOps.Time;
 /**
  * Evaluate the tree
  */
-public abstract class Interpret {
+public class Interpret {
 
     public static Object it(Unrestricted<DslCommand<Void>> uCommand) {
         Objects.requireNonNull(uCommand);
-        return uCommand.map(Interpret::matchCommand);
+        Interpret i = new Interpret();
+        return i.matchCommand(uCommand.transformable);
+        // TODO return uCommand.map(i::matchCommand);
     }
 
-    private static Object matchCommand(DslCommand dslCommand) {
+    public static DslCommand evalCommand(DslCommand dslCommand) {
+        Interpret i = new Interpret();
+        return DslResult.of(i.matchCommand(dslCommand));
+    }
+
+    private Object matchCommand(DslCommand dslCommand) {
         // InMemory
         if (dslCommand instanceof InitDatabase) {
-            return handleInitDb((InitDatabase) dslCommand);
+            return handle((InitDatabase) dslCommand);
         }
         if (dslCommand instanceof QueryMessages) {
-            return handleQueryMessages((QueryMessages) dslCommand);
+            return handle((QueryMessages) dslCommand);
         }
         if (dslCommand instanceof QueryWall) {
-            return handleQueryWall((QueryWall) dslCommand);
+            return handle((QueryWall) dslCommand);
         }
         if (dslCommand instanceof SaveFollowing) {
-            return handleSaveFollowing((SaveFollowing) dslCommand);
+            return handle((SaveFollowing) dslCommand);
         }
         if (dslCommand instanceof SaveMessages) {
-            return handleSaveMessages((SaveMessages) dslCommand);
+            return handle((SaveMessages) dslCommand);
         }
 
         // Input
         if (dslCommand instanceof InitStdIn) {
-            return handleInitInput((InitStdIn) dslCommand);
+            return handle((InitStdIn) dslCommand);
         }
         if (dslCommand instanceof ReadStdIn) {
-            return handleReadLine((ReadStdIn) dslCommand);
+            return handle((ReadStdIn) dslCommand);
         }
 
         // Print
         if (dslCommand instanceof Println) {
-            return handlePrint((Println) dslCommand);
+            return handle((Println) dslCommand);
         }
 
         // Timer
         if (dslCommand instanceof Time) {
-            return handleTime((Time) dslCommand);
+            return handle((Time) dslCommand);
         }
 
         // ---
 
         if (dslCommand instanceof DslResult) {
-            return handleResult((DslResult) dslCommand);
+            return handle((DslResult) dslCommand);
         }
 
         throw new IllegalArgumentException(dslCommand.getClass().getName());
     }
 
-    public static Void handleInitDb(InitDatabase f) {
+    public Void handle(InitDatabase f) {
         InMemory.initDatabase();
         return null;
     }
 
-    public static Messages handleQueryMessages(QueryMessages f) {
+    public Messages handle(QueryMessages f) {
         return InMemory.queryMessagesFor(f.user);
     }
 
-    public static WallUsers handleQueryWall(QueryWall f) {
+    public WallUsers handle(QueryWall f) {
         return InMemory.queryWallUsersFor(f.user);
     }
 
-    public static Void handleSaveFollowing(SaveFollowing f) {
+    public Void handle(SaveFollowing f) {
         InMemory.saveFollowingFor(f.user, f.other);
         return null;
     }
 
-    public static Void handleSaveMessages(SaveMessages f) {
+    public Void handle(SaveMessages f) {
         InMemory.save(f.message);
         return null;
     }
 
-    public static BufferedReader handleInitInput(InitStdIn f) {
+    public BufferedReader handle(InitStdIn f) {
         return Input.initInput();
     }
 
-    public static String handleReadLine(ReadStdIn f) {
+    public String handle(ReadStdIn f) {
         try {
             return Input.readLine(f.in);
         } catch (IOException e) {
@@ -105,16 +112,16 @@ public abstract class Interpret {
         }
     }
 
-    public static Void handlePrint(Println f) {
+    public Void handle(Println f) {
         Printer.println(f.text);
         return null;
     }
 
-    public static Long handleTime(Time f) {
+    public Long handle(Time f) {
         return Timer.time();
     }
 
-    public static Object handleResult(DslResult f) {
+    public Object handle(DslResult f) {
         return f.value;
     }
 
