@@ -27,7 +27,15 @@ public class Unrestricted<TRANSFORMABLE> {
 
     public <R> Unrestricted<R> map(Function<TRANSFORMABLE, R> mapper) {
         // R must also be Transformable 
-        return new Unrestricted<>(mapper.apply(transformable));
+        return flatMap(transformable -> new Unrestricted<>(mapper.apply(transformable)));
+    }
+
+    public <R> Unrestricted<R> mapF(Function<?, R> mapper) {
+        return flatMap(transformable -> {
+            Transformable t = (Transformable) transformable;
+            Transformable x = t.map(mapper);
+            return new Unrestricted<>(x);
+        });
     }
 
     public <R> Unrestricted<R> flatMap(Function<? super TRANSFORMABLE, Unrestricted<R>> mapper) {
