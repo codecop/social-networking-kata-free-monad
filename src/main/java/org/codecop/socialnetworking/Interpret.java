@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Objects;
 
-import org.codecop.socialnetworking.DslCommand.DslCommandMapper;
-import org.codecop.socialnetworking.DslCommand.DslCommandValue;
 import org.codecop.socialnetworking.InMemoryOps.InitDatabase;
 import org.codecop.socialnetworking.InMemoryOps.QueryMessages;
 import org.codecop.socialnetworking.InMemoryOps.QueryWall;
@@ -22,23 +20,12 @@ import org.codecop.socialnetworking.TimerOps.Time;
  */
 public abstract class Interpret {
 
-    // @SuppressWarnings({ "rawtypes", "unchecked" })
-    public static Object it(Unrestricted<DslCommand<Void>> free) {
-        Objects.requireNonNull(free);
-        return free.map(dslCommand -> {
-            matchCommand((DslCommand<?>)dslCommand);
-        });
-
-        //        if (dslCommand instanceof FreeFlatMapper) {
-        //            FreeFlatMapper<Object, Object> f = (FreeFlatMapper) dslCommand;
-        //            Object before = it(f.before);
-        //            DslCommand<Object> current = f.mapper.apply(before);
-        //            return matchCommand(current);
-        //        }
-
+    public static Object it(Unrestricted<DslCommand<Void>> uCommand) {
+        Objects.requireNonNull(uCommand);
+        return uCommand.map(Interpret::matchCommand);
     }
 
-    private static Object matchCommand(DslCommand<?> dslCommand) {
+    private static Object matchCommand(DslCommand dslCommand) {
         // InMemory
         if (dslCommand instanceof InitDatabase) {
             return handleInitDb();
@@ -76,11 +63,7 @@ public abstract class Interpret {
 
         // ---
 
-        if (dslCommand instanceof DslCommandValue) {
-            return handleValue((DslCommandValue<?>) dslCommand);
-        }
-
-        throw new IllegalArgumentException(dslCommand.getClass().getName());
+        return handleValue(dslCommand);
     }
 
     private static Void handleInitDb() {
@@ -127,7 +110,7 @@ public abstract class Interpret {
         return Timer.time();
     }
 
-    private static <T> T handleValue(DslCommandValue<T> f) {
+    private static Object handleValue(DslCommand f) {
         return f.value;
     }
 

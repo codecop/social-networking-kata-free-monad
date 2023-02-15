@@ -15,8 +15,8 @@ public class Unrestricted<TRANSFORMABLE> {
      * @param transformable a Transformable of some type.
      */
     private Unrestricted(TRANSFORMABLE transformable) {
-        if ((transformable instanceof Transformable)) {
-            throw new ClassCastException(Transformable.class.getName());
+        if (!(transformable instanceof Transformable)) {
+            throw new ClassCastException(transformable.getClass().getName());
         }
         this.transformable = transformable;
     }
