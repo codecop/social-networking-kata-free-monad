@@ -28,7 +28,7 @@ public abstract class Interpret {
     private static Object matchCommand(DslCommand dslCommand) {
         // InMemory
         if (dslCommand instanceof InitDatabase) {
-            return handleInitDb();
+            return handleInitDb((InitDatabase) dslCommand);
         }
         if (dslCommand instanceof QueryMessages) {
             return handleQueryMessages((QueryMessages) dslCommand);
@@ -45,7 +45,7 @@ public abstract class Interpret {
 
         // Input
         if (dslCommand instanceof InitStdIn) {
-            return handleInitInput();
+            return handleInitInput((InitStdIn) dslCommand);
         }
         if (dslCommand instanceof ReadStdIn) {
             return handleReadLine((ReadStdIn) dslCommand);
@@ -58,42 +58,46 @@ public abstract class Interpret {
 
         // Timer
         if (dslCommand instanceof Time) {
-            return handleTime();
+            return handleTime((Time) dslCommand);
         }
 
         // ---
 
-        return handleValue(dslCommand);
+        if (dslCommand instanceof DslResult) {
+            return handleResult((DslResult) dslCommand);
+        }
+
+        throw new IllegalArgumentException(dslCommand.getClass().getName());
     }
 
-    private static Void handleInitDb() {
+    public static Void handleInitDb(InitDatabase f) {
         InMemory.initDatabase();
         return null;
     }
 
-    private static Messages handleQueryMessages(QueryMessages f) {
+    public static Messages handleQueryMessages(QueryMessages f) {
         return InMemory.queryMessagesFor(f.user);
     }
 
-    private static WallUsers handleQueryWall(QueryWall f) {
+    public static WallUsers handleQueryWall(QueryWall f) {
         return InMemory.queryWallUsersFor(f.user);
     }
 
-    private static Void handleSaveFollowing(SaveFollowing f) {
+    public static Void handleSaveFollowing(SaveFollowing f) {
         InMemory.saveFollowingFor(f.user, f.other);
         return null;
     }
 
-    private static Void handleSaveMessages(SaveMessages f) {
+    public static Void handleSaveMessages(SaveMessages f) {
         InMemory.save(f.message);
         return null;
     }
 
-    private static BufferedReader handleInitInput() {
+    public static BufferedReader handleInitInput(InitStdIn f) {
         return Input.initInput();
     }
 
-    private static String handleReadLine(ReadStdIn f) {
+    public static String handleReadLine(ReadStdIn f) {
         try {
             return Input.readLine(f.in);
         } catch (IOException e) {
@@ -101,16 +105,16 @@ public abstract class Interpret {
         }
     }
 
-    private static Void handlePrint(Println f) {
+    public static Void handlePrint(Println f) {
         Printer.println(f.text);
         return null;
     }
 
-    private static Long handleTime() {
+    public static Long handleTime(Time f) {
         return Timer.time();
     }
 
-    private static Object handleValue(DslCommand f) {
+    public static Object handleResult(DslResult f) {
         return f.value;
     }
 

@@ -93,7 +93,7 @@ public class Commands {
     }
 
     private static Unrestricted<DslCommand<Messages>> reduce(Stream<Unrestricted<DslCommand<Messages>>> messages) {
-        Unrestricted<DslCommand<Messages>> initial = Unrestricted.liftF(DslCommand.of(Messages.empty()));
+        Unrestricted<DslCommand<Messages>> initial = Unrestricted.liftF(DslResult.of(Messages.empty()));
         return messages.reduce(initial, (a,b) ->join(a, b));
     }
 

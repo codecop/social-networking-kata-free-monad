@@ -41,7 +41,7 @@ public class SocialNetwork {
 
     private static Unrestricted<DslCommand<Void>> processCommand(DslCommand<BufferedReader> inputCmd, Command command) {
         if ("quit".equalsIgnoreCase(command.line)) {
-            return Unrestricted.liftF(DslCommand.nil());
+            return Unrestricted.liftF(DslResult.nil());
         }
         Unrestricted<DslCommand<Void>> result = Commands.handle(command);
         Unrestricted<DslCommand<Void>> remaining = 
