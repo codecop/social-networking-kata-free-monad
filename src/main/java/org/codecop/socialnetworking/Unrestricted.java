@@ -14,8 +14,8 @@ public class Unrestricted<TRANSFORMABLE> {
     /**
      * @param transformable a Transformable of some type.
      */
-    private Unrestricted(TRANSFORMABLE transformable) {
-        if (!(transformable instanceof Transformable)) {
+    protected Unrestricted(TRANSFORMABLE transformable) {
+        if (transformable != null && !(transformable instanceof Transformable)) {
             throw new ClassCastException(transformable.getClass().getName());
         }
         this.transformable = transformable;
@@ -41,9 +41,33 @@ public class Unrestricted<TRANSFORMABLE> {
     }
 
     public <R> Unrestricted<R> flatMap(Function<? super TRANSFORMABLE, Unrestricted<R>> mapper) {
-        return mapper.apply(transformable);
+        return new UnrestrictedNode<R>(mapper, this);
     }
 
+    static class UnrestrictedNode<R> extends Unrestricted<R> {
+
+        private final Function mapper;
+        private final Unrestricted previous;
+
+        public UnrestrictedNode(Function mapper, Unrestricted previous) {
+            super(null);
+            this.mapper = mapper;
+            this.previous = previous;
+        }
+
+        // return mapper.apply(transformable);
+
+        @Override
+        public String toString() {
+            return "[" + previous + "]";
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "[" + transformable + "]";
+    }
+    
 }
 
 /**
