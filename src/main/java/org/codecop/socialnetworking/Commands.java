@@ -1,6 +1,7 @@
 package org.codecop.socialnetworking;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * Parsing and executing. Not from domain. Non pure actions are Free Monads.
@@ -41,9 +42,9 @@ public class Commands {
         if (isRead(command)) {
 
             String user = parseReadUser(command);
-            Unrestricted<DslCommand<Void>> printedTexts = InMemoryOps.queryMessagesFor(user). // io
-                    map(Messages::texts). //
-                    flatMap(PrinterOps::println); // io
+            Unrestricted<DslCommand<Messages>> messagesCmd = InMemoryOps.queryMessagesFor(user); // IO
+            Unrestricted<DslCommand<Optional<String>>> textsCmd = messagesCmd.mapF(Messages::texts); // <Messages, Optional<String>>
+            Unrestricted<DslCommand<Void>> printedTexts = textsCmd.flatMap(PrinterOps::println); // IO
 
             return Optional.of(printedTexts);
         }
@@ -62,10 +63,10 @@ public class Commands {
         if (isWall(command)) {
 
             String user = parseWallUser(command);
-            Unrestricted<DslCommand<Void>> printedTexts = InMemoryOps.queryWallUsersFor(user). // io
-                    flatMap(Commands::queryMessagesForAllUsers). // mixed
-                    map(Messages::usersWithTexts). //
-                    flatMap(PrinterOps::println); // io
+            Unrestricted<DslCommand<WallUsers>> wallUsersCmd = InMemoryOps.queryWallUsersFor(user); // IO
+            Unrestricted<DslCommand<Messages>> messagesCmd = wallUsersCmd.flatMap(wu -> queryMessagesForAllUsers(wu)); // mixed
+            Unrestricted<DslCommand<Optional<String>>> textCmd = messagesCmd.mapF(Messages::usersWithTexts); // <Messages, Optional<String>>
+            Unrestricted<DslCommand<Void>> printedTexts = textCmd.flatMap(PrinterOps::println); // IO
 
             return Optional.of(printedTexts);
         }
@@ -80,11 +81,25 @@ public class Commands {
         return command.line.split("\\s+")[0];
     }
 
-    private static Unrestricted<DslCommand<Messages>> queryMessagesForAllUsers(WallUsers wallUsers) {
-        return wallUsers.users(). //
-                map(InMemoryOps::queryMessagesFor). // io
-                // I have a Stream<Free<Messages>> -> Free<Messages>
-                reduce(DslCommand.of(Messages.empty()), new Unrestricted.Joiner<>());
+    private static DslCommand<Unrestricted<DslCommand<Messages>>> queryMessagesForAllUsers(DslCommand<WallUsers> wallUsersCmd) {
+        return wallUsersCmd.map(wallUsers -> {
+            Stream<String> users = wallUsers.users();
+            Stream<Unrestricted<DslCommand<Messages>>> messages = users.map(InMemoryOps::queryMessagesFor); // IO
+            return reduce(messages);
+        });
+    }
+
+    private static Unrestricted<DslCommand<Messages>> reduce(Stream<Unrestricted<DslCommand<Messages>>> messages) {
+        Unrestricted<DslCommand<Messages>> initial = Unrestricted.liftF(DslCommand.of(Messages.empty()));
+        return messages.reduce(initial, (a,b) ->join(a, b));
+    }
+
+    private static Unrestricted<DslCommand<Messages>> join(Unrestricted<DslCommand<Messages>> ua, Unrestricted<DslCommand<Messages>> ub) {
+        return ub.flatMap(bs -> ua.map(as -> join(as, bs)));
+    }
+
+    private static DslCommand<Messages> join(DslCommand<Messages> as, DslCommand<Messages> bs) {
+        return as.flatMap(a -> bs.map(b -> a.join(b)));
     }
 
     public static Optional<Unrestricted<DslCommand<Void>>> following(Command command) {

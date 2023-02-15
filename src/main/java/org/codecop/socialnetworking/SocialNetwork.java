@@ -12,30 +12,38 @@ public class SocialNetwork {
     static Unrestricted<DslCommand<Void>> app() {
         return InMemoryOps.initDatabase(). // io
                 flatMap(ignore -> InputOps.initInput()). // io
-                flatMap(in -> SocialNetwork.processInput(in));
+                flatMap(inputCmd -> SocialNetwork.processInput(inputCmd));
     }
 
-    static Unrestricted<DslCommand<Void>> processInput(DslCommand<BufferedReader> inCmd) {
-        DslCommand<Unrestricted<DslCommand<String>>> readLine = inCmd.map(InputOps::readLine); // io
+    static DslCommand<Unrestricted<DslCommand<Void>>> processInput(DslCommand<BufferedReader> inputCmd) {
+        DslCommand<Unrestricted<DslCommand<String>>> readLineCmd = inputCmd.map(InputOps::readLine); // IO
         DslCommand<Unrestricted<DslCommand<Command>>> command = // 
-                readLine.map(lineCmd -> //
-                lineCmd.flatMap(line -> // 
-                TimerOps.time(). // io
-                        flatMap(tx -> foo(tx, line))));
-
-        // return command.flatMap(c -> processCommand(inCmd, c));
+                readLineCmd.map(uLineCmd -> //
+                    uLineCmd.flatMap(lineCmd -> // 
+                        TimerOps.time(). // IO
+                        flatMap(timeCmd -> createCommand(timeCmd, lineCmd))));
+        return command.map(uCommand -> //
+            uCommand.flatMap(commandCmd -> 
+                processCommand(inputCmd, commandCmd)));
     }
     
-    static Unrestricted<DslCommand<Command>> foo(DslCommand<Long> t, DslCommand<String> line) {
-        return Unrestricted.liftF(t.flatMap(t2 -> line.map(l -> new Command(l, t2))));
+    static Unrestricted<DslCommand<Command>> createCommand(DslCommand<Long> timeCmd, DslCommand<String> lineCmd) {
+        DslCommand<Command> command = timeCmd.flatMap(time -> lineCmd.map(line -> new Command(line, time)));
+        return Unrestricted.liftF(command);
     }
 
-    static Unrestricted<DslCommand<Void>> processCommand(BufferedReader in, Command command) {
-        if ("quit".equalsIgnoreCase(command.line)) {
-            return Unrestricted.liftF(DslCommand.nil());
-        }
+    static DslCommand<Unrestricted<DslCommand<Void>>> processCommand(DslCommand<BufferedReader> inputCmd, DslCommand<Command> commandCmd) {
+        return commandCmd.map(command -> {
+            if ("quit".equalsIgnoreCase(command.line)) {
+                return Unrestricted.liftF(DslCommand.nil());
+            }
+            return x(inputCmd, command);
+        });
+    }
+
+    private static DslCommand<Unrestricted<Object>> x(DslCommand<BufferedReader> inputCmd, Command command) {
         return Commands.handle(command). //
-                flatMap(ignore -> processInput(in));
+                flatMap(ignore -> processInput(inputCmd));
     }
 
 }

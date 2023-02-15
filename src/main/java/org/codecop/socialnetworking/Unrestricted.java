@@ -25,29 +25,24 @@ public class Unrestricted<TRANSFORMABLE> {
         return new Unrestricted<>(transformable);
     }
 
+    /**
+     * Shortcut for flatmap/liftF
+     */
     public <R> Unrestricted<R> map(Function<TRANSFORMABLE, R> mapper) {
         // R must also be Transformable 
-        return flatMap(transformable -> new Unrestricted<>(mapper.apply(transformable)));
+        return flatMap(t -> new Unrestricted<>(mapper.apply(t)));
     }
 
-    public <R> Unrestricted<R> mapF(Function<?, R> mapper) {
-        return flatMap(transformable -> {
-            Transformable t = (Transformable) transformable;
-            Transformable x = t.map(mapper);
-            return new Unrestricted<>(x);
-        });
+    /**
+     * Shortcut for flatmap/map
+     */
+    public <A, B> Unrestricted mapF(Function<A, B> mapper) {
+        return flatMap(t -> new Unrestricted<>(((Transformable<A>) t).map(mapper)));
     }
 
     public <R> Unrestricted<R> flatMap(Function<? super TRANSFORMABLE, Unrestricted<R>> mapper) {
         return mapper.apply(transformable);
     }
-
-    //    public static class Joiner<T extends Joining<T>> implements BinaryOperator<DslCommand<T>> {
-    //        @Override
-    //        public DslCommand<T> apply(DslCommand<T> a, DslCommand<T> b) {
-    //            return b.flatMap(bs -> a.map(as -> as.join(bs)));
-    //        }
-    //    }
 
 }
 
