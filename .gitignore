@@ -22,3 +22,7 @@ build
 .classpath
 .settings
 .pmd
+
+# Peter
+constraint.txt
+with_*.txt
