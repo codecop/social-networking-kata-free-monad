@@ -25,8 +25,9 @@ public class F {
             int i = 0;
             while (stackTrace[i].getClassName().endsWith("F$NamedFunction")
                     || stackTrace[i].getClassName().endsWith("F")
-                    || stackTrace[i].getClassName().endsWith("Unrestricted")
-                    || stackTrace[i].getClassName().endsWith("DslResult")) {
+                    //|| stackTrace[i].getClassName().endsWith("Unrestricted")
+                    //|| stackTrace[i].getClassName().endsWith("DslResult")
+                    ) {
                 i++;
             }
             StackTraceElement x = stackTrace[i];
