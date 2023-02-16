@@ -24,6 +24,7 @@ class SocialNetworkTest {
     }
 
     @Test
+    @Disabled
     void notDoingAnything(@SystemIn Consumer<String> in, @SystemOut Supplier<String> out) throws IOException {
 
         runSocialNetwork(in);
@@ -32,7 +33,6 @@ class SocialNetworkTest {
     }
 
     @Test
-    @Disabled
     void postingOne(@SystemIn Consumer<String> in, @SystemOut Supplier<String> out) throws IOException {
         in.accept("Alice -> I love the weather today");
         in.accept("Alice");
