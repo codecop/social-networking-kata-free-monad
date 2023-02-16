@@ -106,7 +106,14 @@ public class DslVisitor {
     }
 
     public <T> T handle(DslResult<T> f) {
-        return f.value;
+        T value = f.value;
+        if (value instanceof Unrestricted<?>) {
+            System.err.println("XXX " + value + " XXX");
+            T result = (T) ((Unrestricted<?>) value).run(this);
+            System.err.println("XXX " + result + " XXX");
+            return result;
+        }
+        return value;
     }
 
 }
