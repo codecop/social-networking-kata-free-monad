@@ -32,7 +32,7 @@ public class Unrestricted<TRANSFORMABLE> {
      */
     public <R> Unrestricted<R> map(Function<TRANSFORMABLE, R> mapper) {
         // R must also be Transformable 
-        return flatMap(t -> new Unrestricted<>(mapper.apply(t)));
+        return flatMap(named(mapper, t -> new Unrestricted<>(mapper.apply(t))));
     }
 
     /**
@@ -64,6 +64,7 @@ public class Unrestricted<TRANSFORMABLE> {
             this.mapper = mapper;
         }
 
+        @Override
         public Object run(DslVisitor v) {
             Object x = previous.run(v);
             System.err.println("evaluating " + toString());
@@ -78,6 +79,7 @@ public class Unrestricted<TRANSFORMABLE> {
     }
 
     public Object run(DslVisitor v) {
+        // TODO this is fixing the type, we just want something for transformable
         System.err.println("evaluating " + toString());
         return v.matchCommand((DslCommand<?>) transformable);
     }

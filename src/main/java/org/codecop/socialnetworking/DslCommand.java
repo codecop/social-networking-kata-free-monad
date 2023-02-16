@@ -46,6 +46,12 @@ class DslResult<T> extends DslCommand<T> {
     }
 
     @Override
+    public String toString() {
+        // debugging
+        return super.toString() + " with " + value;
+    }
+    
+    @Override
     public <U> DslCommand<U> map(Function<? super T, ? extends U> mapper) {
         return of(mapper.apply(value));
     }

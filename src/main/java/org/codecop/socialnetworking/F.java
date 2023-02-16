@@ -12,20 +12,40 @@ public class F {
 
         private final Supplier<String> name;
         private final Function<T, R> f;
+        private final StackTraceElement stack;
 
         private NamedFunction(Supplier<String> name, Function<T, R> f) {
             this.name = name;
             this.f = f;
+            this.stack = getTrace();
+        }
+
+        private StackTraceElement getTrace() {
+            StackTraceElement[] stackTrace = new RuntimeException().getStackTrace();
+            int i = 0;
+            while (stackTrace[i].getClassName().endsWith("F$NamedFunction")
+                    || stackTrace[i].getClassName().endsWith("F")
+                    || stackTrace[i].getClassName().endsWith("Unrestricted")
+                    || stackTrace[i].getClassName().endsWith("DslResult")) {
+                i++;
+            }
+            StackTraceElement x = stackTrace[i];
+            return x;
         }
 
         @Override
         public R apply(T t) {
-            return f.apply(t);
+            try {
+                return f.apply(t);
+            } catch (ClassCastException e) {
+                System.err.println(e.toString() + " AT " + stack);
+                throw e;
+            }
         }
 
         @Override
         public String toString() {
-            return name.get();
+            return name.get() + " > " + stack;
         }
     }
 
