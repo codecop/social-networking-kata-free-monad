@@ -23,6 +23,14 @@ class SocialNetworkTest {
     }
 
     @Test
+    void notDoingAnything(@SystemIn Consumer<String> in, @SystemOut Supplier<String> out) throws IOException {
+
+        runSocialNetwork(in);
+
+        assertEquals("", out.get());
+    }
+
+    @Test
     void postingOne(@SystemIn Consumer<String> in, @SystemOut Supplier<String> out) throws IOException {
         in.accept("Alice -> I love the weather today");
         in.accept("Alice");
@@ -52,6 +60,18 @@ class SocialNetworkTest {
         assertEquals("Damn! We lost!\nGood game though.\n", out.get());
     }
 
+    @Test
+    void mixingPostingAndReading(@SystemIn Consumer<String> in, @SystemOut Supplier<String> out) throws IOException {
+        in.accept("Alice -> M1");
+        in.accept("Alice");
+        in.accept("Alice -> M2");
+        in.accept("Alice");
+
+        runSocialNetwork(in);
+
+        assertEquals("M1\nM1\nM2\n", out.get());
+    }
+    
     @Test
     void wall(@SystemIn Consumer<String> in, @SystemOut Supplier<String> out) throws IOException {
         in.accept("Alice -> I love the weather today");
