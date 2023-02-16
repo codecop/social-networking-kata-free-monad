@@ -1,5 +1,7 @@
 package org.codecop.socialnetworking;
 
+import static org.codecop.socialnetworking.F.named;
+
 import java.util.function.Function;
 
 /**
@@ -37,33 +39,41 @@ public class Unrestricted<TRANSFORMABLE> {
      * Shortcut for flatmap/map
      */
     public <A, B> Unrestricted mapF(Function<A, B> mapper) {
-        return flatMap(t -> new Unrestricted<>(((Transformable<A>) t).map(mapper)));
+        return flatMap(named(mapper, t -> {
+            Transformable<A> a = (Transformable<A>) t;
+            Transformable<B> b = a.map(mapper);
+            return Unrestricted.liftF(b);
+        }));
     }
 
     public <R> Unrestricted<R> flatMap(Function<? super TRANSFORMABLE, Unrestricted<R>> mapper) {
+        // this is a value. the mapper will "mapper.apply(this.transformable)"
+        // so we need to create a tree now because the old value will need evaluation
+        // and the flatmap result will need evaluation.
+        return new UnrestrictedNode<>(this, mapper);
+
         // TODO temp hack to eval non lazy hack 
-//        DslCommand result = Interpret.evalCommand((DslCommand) this.transformable);
-//        Unrestricted<R> x = mapper.apply((TRANSFORMABLE) result);
-//        return new UnrestrictedNode<R>(mapper, this, x.transformable);
-        return new UnrestrictedNode<R>(mapper, this, null);
+        //        DslCommand result = Interpret.evalCommand((DslCommand) this.transformable);
+        //        Unrestricted<R> x = mapper.apply((TRANSFORMABLE) result);
+        //        return new UnrestrictedNode<R>(mapper, this, x.transformable);
     }
 
-    static class UnrestrictedNode<R> extends Unrestricted<R> {
+    static class UnrestrictedNode<T, R> extends Unrestricted<R> {
 
-        private final Function mapper;
-        private final Unrestricted previous;
+        private final Unrestricted<T> previous;
+        private final Function<? super T, Unrestricted<R>> mapper;
 
-        public UnrestrictedNode(Function mapper, Unrestricted previous, R x) {
-            super(x);
-            this.mapper = mapper;
+        public UnrestrictedNode(Unrestricted<T> previous, Function<? super T, Unrestricted<R>> mapper) {
+            super(null);
             this.previous = previous;
+            this.mapper = mapper;
         }
 
         // return mapper.apply(previous);
 
         @Override
         public String toString() {
-            return "[" + previous + "]";
+            return "[" + previous + mapper + "]";
         }
     }
 
@@ -71,7 +81,7 @@ public class Unrestricted<TRANSFORMABLE> {
     public String toString() {
         return "[" + transformable + "]";
     }
-    
+
 }
 
 /**
