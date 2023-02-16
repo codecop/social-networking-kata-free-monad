@@ -16,6 +16,51 @@ import org.codecop.socialnetworking.TimerOps.GetTime;
 
 public class DslVisitor {
 
+    public Object matchCommand(DslCommand<?> dslCommand) {
+        // InMemory
+        if (dslCommand instanceof InitDatabase) {
+            return handle((InitDatabase) dslCommand);
+        }
+        if (dslCommand instanceof QueryMessages) {
+            return handle((QueryMessages) dslCommand);
+        }
+        if (dslCommand instanceof QueryWall) {
+            return handle((QueryWall) dslCommand);
+        }
+        if (dslCommand instanceof SaveFollowing) {
+            return handle((SaveFollowing) dslCommand);
+        }
+        if (dslCommand instanceof SaveMessages) {
+            return handle((SaveMessages) dslCommand);
+        }
+
+        // Input
+        if (dslCommand instanceof OpenStdIn) {
+            return handle((OpenStdIn) dslCommand);
+        }
+        if (dslCommand instanceof ReadStdIn) {
+            return handle((ReadStdIn) dslCommand);
+        }
+
+        // Print
+        if (dslCommand instanceof Println) {
+            return handle((Println) dslCommand);
+        }
+
+        // Timer
+        if (dslCommand instanceof GetTime) {
+            return handle((GetTime) dslCommand);
+        }
+
+        // ---
+
+        if (dslCommand instanceof DslResult) {
+            return handle((DslResult<?>) dslCommand);
+        }
+
+        throw new IllegalArgumentException(dslCommand.getClass().getName());
+    }
+
     public Void handle(@SuppressWarnings("unused") InitDatabase f) {
         InMemory.initDatabase();
         return null;
