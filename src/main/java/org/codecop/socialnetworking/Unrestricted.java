@@ -51,11 +51,6 @@ public class Unrestricted<TRANSFORMABLE> {
         // so we need to create a tree now because the old value will need evaluation
         // and the flatmap result will need evaluation.
         return new UnrestrictedNode<>(this, mapper);
-
-        // TODO temp hack to eval non lazy hack 
-        //        DslCommand result = Interpret.evalCommand((DslCommand) this.transformable);
-        //        Unrestricted<R> x = mapper.apply((TRANSFORMABLE) result);
-        //        return new UnrestrictedNode<R>(mapper, this, x.transformable);
     }
 
     static class UnrestrictedNode<T, R> extends Unrestricted<R> {
@@ -69,12 +64,22 @@ public class Unrestricted<TRANSFORMABLE> {
             this.mapper = mapper;
         }
 
-        // return mapper.apply(previous);
+        public Object run(DslVisitor v) {
+            Object x = previous.run(v);
+            System.err.println("evaluating " + toString());
+            Unrestricted<DslCommand<?>> current = (Unrestricted<DslCommand<?>>) mapper.apply((T) DslResult.of(x));
+            return current.run(v);
+        }
 
         @Override
         public String toString() {
             return "[" + previous + mapper + "]";
         }
+    }
+
+    public Object run(DslVisitor v) {
+        System.err.println("evaluating " + toString());
+        return v.matchCommand((DslCommand<?>) transformable);
     }
 
     @Override
