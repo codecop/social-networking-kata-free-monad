@@ -15,7 +15,7 @@ public class Unrestricted<TRANSFORMABLE> {
      * @param transformable a Transformable of some type.
      */
     protected Unrestricted(TRANSFORMABLE transformable) {
-        if (!(transformable instanceof Transformable)) {
+        if (transformable != null && !(transformable instanceof Transformable)) {
             throw new ClassCastException(transformable.getClass().getName());
         }
         this.transformable = transformable;
@@ -42,9 +42,10 @@ public class Unrestricted<TRANSFORMABLE> {
 
     public <R> Unrestricted<R> flatMap(Function<? super TRANSFORMABLE, Unrestricted<R>> mapper) {
         // TODO temp hack to eval non lazy hack 
-        DslCommand result = Interpret.evalCommand((DslCommand) this.transformable);
-        Unrestricted<R> x = mapper.apply((TRANSFORMABLE) result);
-        return new UnrestrictedNode<R>(mapper, this, x.transformable);
+//        DslCommand result = Interpret.evalCommand((DslCommand) this.transformable);
+//        Unrestricted<R> x = mapper.apply((TRANSFORMABLE) result);
+//        return new UnrestrictedNode<R>(mapper, this, x.transformable);
+        return new UnrestrictedNode<R>(mapper, this, null);
     }
 
     static class UnrestrictedNode<R> extends Unrestricted<R> {

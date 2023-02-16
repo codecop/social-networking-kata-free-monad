@@ -119,6 +119,12 @@ interface InMemoryOps {
         public QueryMessages(String user) {
             this.user = user;
         }
+
+        @Override
+        public String toString() {
+            // debugging
+            return super.toString() + " for " + user;
+        }
     }
 
     static Unrestricted<DslCommand<Void>> save(Message message) {
@@ -131,6 +137,12 @@ interface InMemoryOps {
         public SaveMessages(Message message) {
             this.message = message;
         }
+
+        @Override
+        public String toString() {
+            // debugging
+            return super.toString() + " of " + message.getText();
+        }
     }
 
     static Unrestricted<DslCommand<WallUsers>> queryWallUsersFor(String user) {
@@ -142,6 +154,12 @@ interface InMemoryOps {
 
         public QueryWall(String user) {
             this.user = user;
+        }
+
+        @Override
+        public String toString() {
+            // debugging
+            return super.toString() + " for " + user;
         }
     }
 
@@ -156,6 +174,12 @@ interface InMemoryOps {
         public SaveFollowing(String user, String other) {
             this.user = user;
             this.other = other;
+        }
+
+        @Override
+        public String toString() {
+            // debugging
+            return super.toString() + " for " + user + " to " + other;
         }
     }
 

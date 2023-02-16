@@ -6,12 +6,14 @@ import java.io.IOException;
 public class SocialNetwork {
 
     public static void main(String[] args) throws IOException {
-        Interpret.it(app());
+        Unrestricted<DslCommand<Void>> app = app();
+        System.err.println(app);
+        Interpret.it(app);
     }
 
     static Unrestricted<DslCommand<Void>> app() {
         return InMemoryOps.initDatabase(). // io
-                flatMap(ignore -> InputOps.initInput()). // io
+                flatMap(ignore -> InputOps.openInput()). // io
                 flatMap(inputCmd -> SocialNetwork.processInput(inputCmd));
     }
 

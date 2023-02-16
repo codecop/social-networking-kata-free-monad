@@ -34,6 +34,12 @@ interface PrinterOps {
         public Println(Optional<String> text) {
             this.text = text;
         }
+
+        @Override
+        public String toString() {
+            // debugging
+            return super.toString() + " of " + text;
+        }
     }
 
 }

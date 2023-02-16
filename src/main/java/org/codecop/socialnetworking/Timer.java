@@ -16,10 +16,10 @@ public class Timer {
 interface TimerOps {
 
     static Unrestricted<DslCommand<Long>> time() {
-        return Unrestricted.liftF(new Time());
+        return Unrestricted.liftF(new GetTime());
     }
 
-    static class Time extends DslCommand<Long> {
+    static class GetTime extends DslCommand<Long> {
     }
 
 }

@@ -17,6 +17,12 @@ abstract class DslCommand<T> implements Transformable<T> {
         throw new UnsupportedOperationException("Commands cannot be mapped, only results");
     }
 
+    @Override
+    public String toString() {
+        // debugging
+        return "Command " + getClass().getSimpleName();
+    }
+
 }
 
 class DslResult<T> extends DslCommand<T> {

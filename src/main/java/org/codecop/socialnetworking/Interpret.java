@@ -10,10 +10,10 @@ import org.codecop.socialnetworking.InMemoryOps.QueryMessages;
 import org.codecop.socialnetworking.InMemoryOps.QueryWall;
 import org.codecop.socialnetworking.InMemoryOps.SaveFollowing;
 import org.codecop.socialnetworking.InMemoryOps.SaveMessages;
-import org.codecop.socialnetworking.InputOps.InitStdIn;
+import org.codecop.socialnetworking.InputOps.OpenStdIn;
 import org.codecop.socialnetworking.InputOps.ReadStdIn;
 import org.codecop.socialnetworking.PrinterOps.Println;
-import org.codecop.socialnetworking.TimerOps.Time;
+import org.codecop.socialnetworking.TimerOps.GetTime;
 
 /**
  * Evaluate the tree
@@ -51,8 +51,8 @@ public class Interpret {
         }
 
         // Input
-        if (dslCommand instanceof InitStdIn) {
-            return handle((InitStdIn) dslCommand);
+        if (dslCommand instanceof OpenStdIn) {
+            return handle((OpenStdIn) dslCommand);
         }
         if (dslCommand instanceof ReadStdIn) {
             return handle((ReadStdIn) dslCommand);
@@ -64,8 +64,8 @@ public class Interpret {
         }
 
         // Timer
-        if (dslCommand instanceof Time) {
-            return handle((Time) dslCommand);
+        if (dslCommand instanceof GetTime) {
+            return handle((GetTime) dslCommand);
         }
 
         // ---
@@ -100,7 +100,7 @@ public class Interpret {
         return null;
     }
 
-    public BufferedReader handle(InitStdIn f) {
+    public BufferedReader handle(OpenStdIn f) {
         return Input.initInput();
     }
 
@@ -117,7 +117,7 @@ public class Interpret {
         return null;
     }
 
-    public Long handle(Time f) {
+    public Long handle(GetTime f) {
         return Timer.time();
     }
 
