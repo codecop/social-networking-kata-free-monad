@@ -15,7 +15,7 @@ public class Timer {
 
 interface TimerOps {
 
-    static Free<DslCommand<Long>> time() {
+    static Free<DslCommand<Long>, Long> time() {
         return Free.liftF(new GetTime());
     }
 

@@ -9,45 +9,53 @@ import java.util.function.Function;
  * 
  * @See "https://medium.com/modernnerd-code/dsls-with-the-free-monad-in-java-8-part-i-701408e874f8"
  */
-public abstract class Free<TRANSFORMABLE> {
+public abstract class Free<TRANSFORMABLE, VALUE> {
 
-    public static <T> Free<T> liftF(T transformable) {
+    interface HigherMap<T, TV, R, RV> extends Function<T, R> {
+        R apply(T t);
+    }
+
+    public static <T, V> Free<T, V> liftF(T transformable) {
         return new FreeValue<>(transformable);
     }
 
     /**
      * Shortcut for flatmap/liftF
      */
-    public <R> Free<R> map(Function<TRANSFORMABLE, R> mapper) {
-        // R must also be Transformable 
+    public <R, RV> Free<R, RV> map(HigherMap<TRANSFORMABLE, VALUE, R, RV> mapper) {
         return flatMap(named(mapper, t -> liftF(mapper.apply(t))));
+        // return flatMap(t -> liftF(mapper.apply(t)));
     }
 
     /**
      * Shortcut for flatmap/map
      */
-    public <A, B> Free mapF(Function<A, B> mapper) {
+    public <RV> Free<TRANSFORMABLE, RV> mapF(Function<VALUE, RV> mapper) {
         return flatMap(named(mapper, t -> {
-            Transformable<A> a = (Transformable<A>) t;
-            Transformable<B> b = a.map(mapper);
-            return Free.liftF(b);
+        // return flatMap(t -> {
+            // assume TRANSFORMABLE of VALUE is a Transformable<VALUE> 
+            Transformable<VALUE> value = (Transformable<VALUE>) t;
+            Transformable<RV> mappedValue = value.map(mapper);
+            // assume Transformable<RV> is a TRANSFORMABLE of RV 
+            TRANSFORMABLE cast = (TRANSFORMABLE) mappedValue;
+            return Free.<TRANSFORMABLE, RV>liftF(cast);
         }));
     }
 
-    public <R> Free<R> flatMap(Function<? super TRANSFORMABLE, Free<R>> mapper) {
+    public <R, RV> Free<R, RV> flatMap(HigherMap<? super TRANSFORMABLE, VALUE, Free<R, RV>, RV> mapper) {
         // this is a value. the mapper will "mapper.apply(this.transformable)"
         // so we need to create a tree now because the old value will need evaluation
         // and the flatmap result will need evaluation.
         return new FreeFlatMapped<>(this, mapper);
     }
 
-    static class FreeValue<TRANSFORMABLE> extends Free<TRANSFORMABLE> {
+    static class FreeValue<TRANSFORMABLE, VALUE> extends Free<TRANSFORMABLE, VALUE> {
         final TRANSFORMABLE transformable;
 
         /**
          * @param transformable a Transformable of some type.
          */
-        protected FreeValue(TRANSFORMABLE transformable) {
+        private FreeValue(TRANSFORMABLE transformable) {
             if (!(transformable instanceof Transformable)) {
                 throw new ClassCastException(transformable.getClass().getName());
             }
@@ -60,12 +68,12 @@ public abstract class Free<TRANSFORMABLE> {
         }
     }
 
-    static class FreeFlatMapped<T, R> extends Free<R> {
+    static class FreeFlatMapped<T, TV, R, RV> extends Free<R, RV> {
 
-        final Free<T> previous;
-        final Function<? super T, Free<R>> mapper;
+        final Free<T, TV> previous;
+        final HigherMap<? super T, TV, Free<R, RV>, RV> mapper;
 
-        public FreeFlatMapped(Free<T> previous, Function<? super T, Free<R>> mapper) {
+        public FreeFlatMapped(Free<T, TV> previous, HigherMap<? super T, TV, Free<R, RV>, RV> mapper) {
             this.previous = previous;
             this.mapper = mapper;
         }

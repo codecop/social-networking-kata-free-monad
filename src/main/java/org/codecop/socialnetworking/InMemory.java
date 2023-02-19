@@ -54,14 +54,14 @@ public class InMemory {
 
 interface InMemoryOps {
 
-    static Free<DslCommand<Void>> initDatabase() {
+    static Free<DslCommand<Void>, Void> initDatabase() {
         return Free.liftF(new InitDatabase());
     }
 
     static class InitDatabase extends DslCommand<Void> {
     }
 
-    static Free<DslCommand<Messages>> queryMessagesFor(String user) {
+    static Free<DslCommand<Messages>, Messages> queryMessagesFor(String user) {
         return Free.liftF(new QueryMessages(user));
     }
 
@@ -79,7 +79,7 @@ interface InMemoryOps {
         }
     }
 
-    static Free<DslCommand<Void>> save(Message message) {
+    static Free<DslCommand<Void>, Void> save(Message message) {
         return Free.liftF(new SaveMessages(message));
     }
 
@@ -97,7 +97,7 @@ interface InMemoryOps {
         }
     }
 
-    static Free<DslCommand<WallUsers>> queryWallUsersFor(String user) {
+    static Free<DslCommand<WallUsers>, WallUsers> queryWallUsersFor(String user) {
         return Free.liftF(new QueryWall(user));
     }
 
@@ -115,7 +115,7 @@ interface InMemoryOps {
         }
     }
 
-    static Free<DslCommand<Void>> saveFollowingFor(String user, String other) {
+    static Free<DslCommand<Void>, Void> saveFollowingFor(String user, String other) {
         return Free.liftF(new SaveFollowing(user, other));
     }
 

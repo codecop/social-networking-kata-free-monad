@@ -26,14 +26,14 @@ public class Input {
 
 interface InputOps {
 
-    static Free<DslCommand<BufferedReader>> openInput() {
+    static Free<DslCommand<BufferedReader>, BufferedReader> openInput() {
         return Free.liftF(new OpenStdIn());
     }
 
     static class OpenStdIn extends DslCommand<BufferedReader> {
     }
 
-    static Free<DslCommand<String>> readLine(BufferedReader in) {
+    static Free<DslCommand<String>, String> readLine(BufferedReader in) {
         return Free.liftF(new ReadStdIn(in));
     }
 

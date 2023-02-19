@@ -18,11 +18,11 @@ import org.codecop.socialnetworking.TimerOps.GetTime;
 
 public class DslVisitor {
 
-    public Object matchCommand(Free<?> u) {
-        if (u instanceof FreeFlatMapped<?, ?>) {
+    public Object matchCommand(Free u) {
+        if (u instanceof FreeFlatMapped) {
             return handle((FreeFlatMapped) u);
         }
-        if (u instanceof FreeValue<?>) {
+        if (u instanceof FreeValue) {
             return handle((FreeValue) u);
         }
 
@@ -32,11 +32,11 @@ public class DslVisitor {
     public Object handle(FreeFlatMapped u) {
         Object x = matchCommand(u.previous);
         System.err.println("evaluating " + u.toString());
-        Free<DslCommand<?>> current = (Free<DslCommand<?>>) u.mapper.apply(DslResult.of(x));
+        Free<DslCommand<?>, ?> current = (Free<DslCommand<?>, ?>) u.mapper.apply(DslResult.of(x));
         return matchCommand(current);
     }
 
-    public Object handle(FreeValue<?> u) {
+    public Object handle(FreeValue u) {
         // TODO breaking encapsulation
         System.err.println("evaluating " + u.toString());
         return matchCommand((DslCommand<?>) u.transformable);
@@ -145,9 +145,9 @@ public class DslVisitor {
 
     public <T> T handle(DslResult<T> f) {
         T value = f.value;
-        if (value instanceof Free<?>) {
+        if (value instanceof Free<?, ?>) {
             System.err.print("nested ...");
-            T result = (T) matchCommand((Free<?>) value);
+            T result = (T) matchCommand((Free<?, ?>) value);
             // System.err.println("XXX " + result + " XXX");
             return (T) Free.liftF(DslResult.of(result));
         }

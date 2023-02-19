@@ -9,7 +9,7 @@ import java.util.Objects;
  */
 public class Interpret {
 
-    public static Object it(Free<DslCommand<Void>> uCommand) throws IOException {
+    public static Object it(Free<DslCommand<Void>, Void> uCommand) throws IOException {
         Objects.requireNonNull(uCommand);
         DslVisitor v = new DslVisitor();
         try {
