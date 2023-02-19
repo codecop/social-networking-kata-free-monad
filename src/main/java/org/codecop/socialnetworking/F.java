@@ -8,7 +8,7 @@ import java.util.function.Supplier;
  */
 public class F {
 
-    private static final class NamedFunction<T, R> implements Function<T, R> {
+    private static final class NamedFunction<T, TV, R, RV> implements HigherMap<T, TV, R, RV> {
 
         private final Supplier<String> name;
         private final Function<T, R> f;
@@ -50,7 +50,11 @@ public class F {
         }
     }
 
-    public static <T, R> Function<T, R> named(String name, Function<T, R> f) {
+    interface HigherMap<T, TV, R, RV> extends Function<T, R> {
+        R apply(T t);
+    }
+
+    public static <T, TV, R, RV> HigherMap<T, TV, R, RV> named(String name, HigherMap<T, TV, R, RV> f) {
         if (f instanceof NamedFunction) {
             return f;
         }
@@ -61,7 +65,7 @@ public class F {
         return new NamedFunction<>(() -> " mapped by " + name, f);
     }
 
-    public static <T, R> Function<T, R> named(Function<?, ?> innerMapper, Function<T, R> f) {
+    public static <T, TV, R, RV> HigherMap<T, TV, R, RV> named(Function<?, ?> innerMapper, HigherMap<T, TV, R, RV> f) {
         if (f instanceof NamedFunction) {
             return f;
         }

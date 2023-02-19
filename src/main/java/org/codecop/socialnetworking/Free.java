@@ -11,10 +11,6 @@ import java.util.function.Function;
  */
 public abstract class Free<TRANSFORMABLE, VALUE> {
 
-    interface HigherMap<T, TV, R, RV> extends Function<T, R> {
-        R apply(T t);
-    }
-
     public static <T, V> Free<T, V> liftF(T transformable) {
         return new FreeValue<>(transformable);
     }
@@ -22,7 +18,7 @@ public abstract class Free<TRANSFORMABLE, VALUE> {
     /**
      * Shortcut for flatmap/liftF
      */
-    public <R, RV> Free<R, RV> map(HigherMap<TRANSFORMABLE, VALUE, R, RV> mapper) {
+    public <R, RV> Free<R, RV> map(F.HigherMap<TRANSFORMABLE, VALUE, R, RV> mapper) {
         return flatMap(named(mapper, t -> liftF(mapper.apply(t))));
         // return flatMap(t -> liftF(mapper.apply(t)));
     }
@@ -42,7 +38,7 @@ public abstract class Free<TRANSFORMABLE, VALUE> {
         }));
     }
 
-    public <R, RV> Free<R, RV> flatMap(HigherMap<? super TRANSFORMABLE, VALUE, Free<R, RV>, RV> mapper) {
+    public <R, RV> Free<R, RV> flatMap(F.HigherMap<? super TRANSFORMABLE, VALUE, Free<R, RV>, RV> mapper) {
         // this is a value. the mapper will "mapper.apply(this.transformable)"
         // so we need to create a tree now because the old value will need evaluation
         // and the flatmap result will need evaluation.
@@ -71,9 +67,9 @@ public abstract class Free<TRANSFORMABLE, VALUE> {
     static class FreeFlatMapped<T, TV, R, RV> extends Free<R, RV> {
 
         final Free<T, TV> previous;
-        final HigherMap<? super T, TV, Free<R, RV>, RV> mapper;
+        final F.HigherMap<? super T, TV, Free<R, RV>, RV> mapper;
 
-        public FreeFlatMapped(Free<T, TV> previous, HigherMap<? super T, TV, Free<R, RV>, RV> mapper) {
+        public FreeFlatMapped(Free<T, TV> previous, F.HigherMap<? super T, TV, Free<R, RV>, RV> mapper) {
             this.previous = previous;
             this.mapper = mapper;
         }
