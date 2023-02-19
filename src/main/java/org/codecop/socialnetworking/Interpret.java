@@ -1,5 +1,7 @@
 package org.codecop.socialnetworking;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Objects;
 
 /**
@@ -7,10 +9,14 @@ import java.util.Objects;
  */
 public class Interpret {
 
-    public static Object it(Unrestricted<DslCommand<Void>> uCommand) {
+    public static Object it(Free<DslCommand<Void>> uCommand) throws IOException {
         Objects.requireNonNull(uCommand);
         DslVisitor v = new DslVisitor();
-        return v.matchCommand(uCommand);
+        try {
+            return v.matchCommand(uCommand);
+        } catch (UncheckedIOException ex) {
+            throw ex.getCause();
+        }
     }
 
 }

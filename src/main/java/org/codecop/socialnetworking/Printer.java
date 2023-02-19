@@ -12,16 +12,16 @@ public class Printer {
 
 interface PrinterOps {
 
-    public static Unrestricted<DslCommand<Void>> println(Optional<String> text) {
-        return Unrestricted.liftF(createPrintln(text));
+    public static Free<DslCommand<Void>> println(Optional<String> text) {
+        return Free.liftF(createPrintln(text));
     }
 
     static Println createPrintln(Optional<String> text) {
         return new Println(text);
     }
 
-    public static Unrestricted<DslCommand<Void>> println(DslCommand<Optional<String>> text) {
-        return Unrestricted.liftF(mapPrintln(text));
+    public static Free<DslCommand<Void>> println(DslCommand<Optional<String>> text) {
+        return Free.liftF(mapPrintln(text));
     }
 
     static DslCommand<Void> mapPrintln(DslCommand<Optional<String>> textCmd) {

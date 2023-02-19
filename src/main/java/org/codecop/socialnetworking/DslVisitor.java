@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
+import org.codecop.socialnetworking.Free.FreeValue;
+import org.codecop.socialnetworking.Free.FreeFlatMapped;
 import org.codecop.socialnetworking.InMemoryOps.InitDatabase;
 import org.codecop.socialnetworking.InMemoryOps.QueryMessages;
 import org.codecop.socialnetworking.InMemoryOps.QueryWall;
@@ -13,26 +15,28 @@ import org.codecop.socialnetworking.InputOps.OpenStdIn;
 import org.codecop.socialnetworking.InputOps.ReadStdIn;
 import org.codecop.socialnetworking.PrinterOps.Println;
 import org.codecop.socialnetworking.TimerOps.GetTime;
-import org.codecop.socialnetworking.Unrestricted.UnrestrictedNode;
 
 public class DslVisitor {
 
-    public Object matchCommand(Unrestricted<?> u) {
-        if (u instanceof UnrestrictedNode<?, ?>) {
-            return handle((UnrestrictedNode) u);
+    public Object matchCommand(Free<?> u) {
+        if (u instanceof FreeFlatMapped<?, ?>) {
+            return handle((FreeFlatMapped) u);
+        }
+        if (u instanceof FreeValue<?>) {
+            return handle((FreeValue) u);
         }
 
-        return handle(u);
+        throw new IllegalArgumentException(u.getClass().getName());
     }
 
-    public Object handle(UnrestrictedNode u) {
+    public Object handle(FreeFlatMapped u) {
         Object x = matchCommand(u.previous);
         System.err.println("evaluating " + u.toString());
-        Unrestricted<DslCommand<?>> current = (Unrestricted<DslCommand<?>>) u.mapper.apply(DslResult.of(x));
+        Free<DslCommand<?>> current = (Free<DslCommand<?>>) u.mapper.apply(DslResult.of(x));
         return matchCommand(current);
     }
 
-    public Object handle(Unrestricted<?> u) {
+    public Object handle(FreeValue<?> u) {
         // TODO breaking encapsulation
         System.err.println("evaluating " + u.toString());
         return matchCommand((DslCommand<?>) u.transformable);
@@ -141,11 +145,11 @@ public class DslVisitor {
 
     public <T> T handle(DslResult<T> f) {
         T value = f.value;
-        if (value instanceof Unrestricted<?>) {
+        if (value instanceof Free<?>) {
             System.err.print("nested ...");
-            T result = (T) matchCommand((Unrestricted<?>) value);
+            T result = (T) matchCommand((Free<?>) value);
             // System.err.println("XXX " + result + " XXX");
-            return (T) Unrestricted.liftF(DslResult.of(result));
+            return (T) Free.liftF(DslResult.of(result));
         }
         return value;
     }
