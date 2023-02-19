@@ -10,7 +10,6 @@ import org.codecop.base.CaptureSystemOutExtension;
 import org.codecop.base.ProvideSystemInExtension;
 import org.codecop.base.SystemIn;
 import org.codecop.base.SystemOut;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -24,7 +23,6 @@ class SocialNetworkTest {
     }
 
     @Test
-    @Disabled
     void notDoingAnything(@SystemIn Consumer<String> in, @SystemOut Supplier<String> out) throws IOException {
 
         runSocialNetwork(in);
@@ -43,7 +41,6 @@ class SocialNetworkTest {
     }
 
     @Test
-    @Disabled
     void readingUnknownUser(@SystemIn Consumer<String> in, @SystemOut Supplier<String> out) throws IOException {
         in.accept("Bob");
 
@@ -53,7 +50,6 @@ class SocialNetworkTest {
     }
 
     @Test
-    @Disabled
     void postingMoreWithBlanks(@SystemIn Consumer<String> in, @SystemOut Supplier<String> out) throws IOException {
         in.accept("Bob->Damn! We lost!");
         in.accept(" Bob ->Good game though. ");
@@ -65,7 +61,6 @@ class SocialNetworkTest {
     }
 
     @Test
-    @Disabled
     void mixingPostingAndReading(@SystemIn Consumer<String> in, @SystemOut Supplier<String> out) throws IOException {
         in.accept("Alice -> M1");
         in.accept("Alice");
@@ -76,9 +71,8 @@ class SocialNetworkTest {
 
         assertEquals("M1\nM1\nM2\n", out.get());
     }
-    
+
     @Test
-    @Disabled
     void wall(@SystemIn Consumer<String> in, @SystemOut Supplier<String> out) throws IOException {
         in.accept("Alice -> I love the weather today");
         in.accept("Alice wall");
@@ -89,7 +83,6 @@ class SocialNetworkTest {
     }
 
     @Test
-    @Disabled
     void following(@SystemIn Consumer<String> in, @SystemOut Supplier<String> out) throws IOException {
         in.accept("Charlie -> I'm in New York today! Anyone want to have a coffee?");
         in.accept("Alice -> I love the weather today");
@@ -104,7 +97,6 @@ class SocialNetworkTest {
     }
 
     @Test
-    @Disabled
     void followingSortedByTime(@SystemIn Consumer<String> in, @SystemOut Supplier<String> out) throws IOException {
         in.accept("Alice -> I love the weather today");
         in.accept("Charlie -> I'm in New York today! Anyone want to have a coffee?");

@@ -14,7 +14,9 @@ public class Input {
     }
 
     static String readLine(BufferedReader in) throws IOException {
-        return in.readLine();
+        String line = in.readLine();
+        // System.err.println("READING ... " + line);
+        return line;
     }
 }
 
@@ -36,6 +38,12 @@ interface InputOps {
 
         public ReadStdIn(BufferedReader in) {
             this.in = in;
+        }
+
+        @Override
+        public String toString() {
+            // debugging
+            return super.toString() + " with " + in;
         }
     }
 }

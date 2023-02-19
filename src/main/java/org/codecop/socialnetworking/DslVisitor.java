@@ -60,9 +60,15 @@ public class DslVisitor {
 
         throw new IllegalArgumentException(dslCommand.getClass().getName());
     }
+    
+    private boolean init = false;
 
     public Void handle(@SuppressWarnings("unused") InitDatabase f) {
-        InMemory.initDatabase();
+        // PROBLEM: This is a side effect. I must only run it once.
+        if (!init) {
+            init = true;
+            InMemory.initDatabase();
+        }
         return null;
     }
 
@@ -84,8 +90,14 @@ public class DslVisitor {
         return null;
     }
 
+    private BufferedReader first;
+    
     public BufferedReader handle(@SuppressWarnings("unused") OpenStdIn f) {
-        return Input.initInput();
+        // PROBLEM: This is not transparent, but a side effect. I must return the same all times.
+        if (first == null) {
+            first = Input.initInput(); 
+        }
+        return first;
     }
 
     public String handle(ReadStdIn f) {
@@ -108,10 +120,10 @@ public class DslVisitor {
     public <T> T handle(DslResult<T> f) {
         T value = f.value;
         if (value instanceof Unrestricted<?>) {
-            System.err.println("XXX " + value + " XXX");
+            System.err.print("nested ...");
             T result = (T) ((Unrestricted<?>) value).run(this);
-            System.err.println("XXX " + result + " XXX");
-            return result;
+            // System.err.println("XXX " + result + " XXX");
+            return (T) Unrestricted.liftF(DslResult.of(result));
         }
         return value;
     }

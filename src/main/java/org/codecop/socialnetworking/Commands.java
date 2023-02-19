@@ -10,10 +10,10 @@ public class Commands {
 
     static Unrestricted<DslCommand<Void>> handle(Command command) {
         return post(command).orElse( //
-               read(command).orElse( //
-               wall(command).orElse( //
-               following(command).orElse( //
-               unknown(command)))));
+                read(command).orElse( //
+                        wall(command).orElse( //
+                                following(command).orElse( //
+                                        unknown(command)))));
     }
 
     static Optional<Unrestricted<DslCommand<Void>>> post(Command command) {
@@ -64,11 +64,14 @@ public class Commands {
 
             String user = parseWallUser(command);
             Unrestricted<DslCommand<WallUsers>> uWallUsersCmd = InMemoryOps.queryWallUsersFor(user); // IO
-            Unrestricted<DslCommand<Unrestricted<DslCommand<Messages>>>> messagesCmd = uWallUsersCmd.map(Commands::queryMessagesForAllUsers); // mixed
-            Unrestricted<DslCommand<Unrestricted<DslCommand<Optional<String>>>>> textCmd = 
-                    messagesCmd.<Unrestricted<DslCommand<Messages>>, Unrestricted<DslCommand<Optional<String>>>>mapF(m -> m.<Messages, Optional<String>>mapF(Messages::usersWithTexts)); 
-            Unrestricted<DslCommand<Unrestricted<DslCommand<Void>>>> printedTexts = 
-                    textCmd.<Unrestricted<DslCommand<Optional<String>>>, Unrestricted<DslCommand<Void>>>mapF(m -> m.flatMap(PrinterOps::println)); // IO
+            Unrestricted<DslCommand<Unrestricted<DslCommand<Messages>>>> messagesCmd = uWallUsersCmd
+                    .map(Commands::queryMessagesForAllUsers); // mixed
+            Unrestricted<DslCommand<Unrestricted<DslCommand<Optional<String>>>>> textCmd = messagesCmd
+                    .<Unrestricted<DslCommand<Messages>>, Unrestricted<DslCommand<Optional<String>>>>mapF(
+                            m -> m.<Messages, Optional<String>>mapF(Messages::usersWithTexts));
+            Unrestricted<DslCommand<Unrestricted<DslCommand<Void>>>> printedTexts = textCmd
+                    .<Unrestricted<DslCommand<Optional<String>>>, Unrestricted<DslCommand<Void>>>mapF(
+                            m -> m.flatMap(PrinterOps::println)); // IO
 
             Unrestricted casts = printedTexts;
             return Optional.of(casts);
@@ -84,7 +87,8 @@ public class Commands {
         return command.line.split("\\s+")[0];
     }
 
-    private static DslCommand<Unrestricted<DslCommand<Messages>>> queryMessagesForAllUsers(DslCommand<WallUsers> wallUsersCmd) {
+    private static DslCommand<Unrestricted<DslCommand<Messages>>> queryMessagesForAllUsers(
+            DslCommand<WallUsers> wallUsersCmd) {
         return wallUsersCmd.map(wallUsers -> {
             Stream<String> users = wallUsers.users();
             Stream<Unrestricted<DslCommand<Messages>>> messages = users.map(InMemoryOps::queryMessagesFor); // IO
@@ -94,10 +98,11 @@ public class Commands {
 
     private static Unrestricted<DslCommand<Messages>> reduce(Stream<Unrestricted<DslCommand<Messages>>> messages) {
         Unrestricted<DslCommand<Messages>> initial = Unrestricted.liftF(DslResult.of(Messages.empty()));
-        return messages.reduce(initial, (a,b) ->join(a, b));
+        return messages.reduce(initial, (a, b) -> join(a, b));
     }
 
-    private static Unrestricted<DslCommand<Messages>> join(Unrestricted<DslCommand<Messages>> ua, Unrestricted<DslCommand<Messages>> ub) {
+    private static Unrestricted<DslCommand<Messages>> join(Unrestricted<DslCommand<Messages>> ua,
+            Unrestricted<DslCommand<Messages>> ub) {
         return ub.flatMap(bs -> ua.map(as -> join(as, bs)));
     }
 
@@ -150,5 +155,10 @@ class Command {
     public Command(String line, Long atTime) {
         this.line = line.trim();
         this.atTime = atTime;
+    }
+
+    @Override
+    public String toString() {
+        return "User Command \"" + line + "\" at " + atTime;
     }
 }
