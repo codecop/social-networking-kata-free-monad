@@ -55,8 +55,8 @@ public class Unrestricted<TRANSFORMABLE> {
 
     static class UnrestrictedNode<T, R> extends Unrestricted<R> {
 
-        private final Unrestricted<T> previous;
-        private final Function<? super T, Unrestricted<R>> mapper;
+        final Unrestricted<T> previous;
+        final Function<? super T, Unrestricted<R>> mapper;
 
         public UnrestrictedNode(Unrestricted<T> previous, Function<? super T, Unrestricted<R>> mapper) {
             super(null);
@@ -65,23 +65,9 @@ public class Unrestricted<TRANSFORMABLE> {
         }
 
         @Override
-        public Object run(DslVisitor v) {
-            Object x = previous.run(v);
-            System.err.println("evaluating " + toString());
-            Unrestricted<DslCommand<?>> current = (Unrestricted<DslCommand<?>>) mapper.apply((T) DslResult.of(x));
-            return current.run(v);
-        }
-
-        @Override
         public String toString() {
             return "[" + previous + mapper + "]";
         }
-    }
-
-    public Object run(DslVisitor v) {
-        // TODO this is hardcoding the type, we just want something for transformable
-        System.err.println("evaluating " + toString());
-        return v.matchCommand((DslCommand<?>) transformable);
     }
 
     @Override

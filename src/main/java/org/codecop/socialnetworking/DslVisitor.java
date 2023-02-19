@@ -13,8 +13,30 @@ import org.codecop.socialnetworking.InputOps.OpenStdIn;
 import org.codecop.socialnetworking.InputOps.ReadStdIn;
 import org.codecop.socialnetworking.PrinterOps.Println;
 import org.codecop.socialnetworking.TimerOps.GetTime;
+import org.codecop.socialnetworking.Unrestricted.UnrestrictedNode;
 
 public class DslVisitor {
+
+    public Object matchCommand(Unrestricted<?> u) {
+        if (u instanceof UnrestrictedNode<?, ?>) {
+            return handle((UnrestrictedNode) u);
+        }
+
+        return handle(u);
+    }
+
+    public Object handle(UnrestrictedNode u) {
+        Object x = matchCommand(u.previous);
+        System.err.println("evaluating " + u.toString());
+        Unrestricted<DslCommand<?>> current = (Unrestricted<DslCommand<?>>) u.mapper.apply(DslResult.of(x));
+        return matchCommand(current);
+    }
+
+    public Object handle(Unrestricted<?> u) {
+        // TODO breaking encapsulation
+        System.err.println("evaluating " + u.toString());
+        return matchCommand((DslCommand<?>) u.transformable);
+    }
 
     public Object matchCommand(DslCommand<?> dslCommand) {
         // InMemory
@@ -60,7 +82,7 @@ public class DslVisitor {
 
         throw new IllegalArgumentException(dslCommand.getClass().getName());
     }
-    
+
     private boolean init = false;
 
     public Void handle(@SuppressWarnings("unused") InitDatabase f) {
@@ -91,11 +113,11 @@ public class DslVisitor {
     }
 
     private BufferedReader first;
-    
+
     public BufferedReader handle(@SuppressWarnings("unused") OpenStdIn f) {
         // PROBLEM: This is not transparent, but a side effect. I must return the same all times.
         if (first == null) {
-            first = Input.initInput(); 
+            first = Input.initInput();
         }
         return first;
     }
@@ -121,7 +143,7 @@ public class DslVisitor {
         T value = f.value;
         if (value instanceof Unrestricted<?>) {
             System.err.print("nested ...");
-            T result = (T) ((Unrestricted<?>) value).run(this);
+            T result = (T) matchCommand((Unrestricted<?>) value);
             // System.err.println("XXX " + result + " XXX");
             return (T) Unrestricted.liftF(DslResult.of(result));
         }
