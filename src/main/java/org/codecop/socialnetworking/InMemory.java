@@ -52,54 +52,6 @@ public class InMemory {
 
 }
 
-interface DbOps<OUTPUT> extends Generic<OUTPUT> {
-
-    class Init implements DbOps<Void> {
-    }
-
-    class Query<T> implements DbOps<T> {
-        // used for QueryMessages, QueryWallUsers
-        final Class<T> type;
-        final String user;
-
-        public Query(Class<T> type, String user) {
-            this.type = type;
-            this.user = user;
-        }
-    }
-
-    class Save<T> implements DbOps<Void> {
-        // used for SaveUser, SaveFollowing
-        final Class<T> type;
-        // key/id is missing in this example
-        final T value;
-
-        public Save(Class<T> type, T value) {
-            this.type = type;
-            this.value = value;
-        }
-    }
-
-}
-
-//class DbMonad<T, A> implements Free<DbOps<T>, T, A> {
-//    // type DBMonad[A] = Free[DBOps, A]
-//}
-
-class DbOpsImplFoo {
-    static Free<DbOps<Void>, Void, Void> /*DbMonad<Void>*/ init() {
-        return Free.<DbOps<Void>, Void, Void>liftM(new DbOps.Init());
-    }
-
-    static <T> Free<DbOps<T>, T, T> /*DbMonad<T>*/ query(Class<T> type, String user) {
-        return Free.<DbOps<T>, T, T>liftM(new DbOps.Query<>(type, user));
-    }
-
-    static <T> Free<DbOps<Void>, Void, T> /*DbMonad<Void>*/ save(Class<T> type, T value) {
-        return Free.<DbOps<Void>, Void, T>liftM(new DbOps.Save<>(type, value));
-    }
-}
-
 interface InMemoryOps {
 
     static Unrestricted<DslCommand<Void>> initDatabase() {

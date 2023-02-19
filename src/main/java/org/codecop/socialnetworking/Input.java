@@ -14,7 +14,11 @@ public class Input {
     }
 
     static String readLine(BufferedReader in) throws IOException {
-        String line = in.readLine();
+        return debug(in.readLine());
+    }
+
+    private static String debug(String line) {
+        // debugging
         // System.err.println("READING ... " + line);
         return line;
     }

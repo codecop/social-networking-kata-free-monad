@@ -10,17 +10,17 @@ public class Commands {
 
     static Unrestricted<DslCommand<Void>> handle(Command command) {
         return post(command).orElse( //
-                read(command).orElse( //
-                        wall(command).orElse( //
-                                following(command).orElse( //
-                                        unknown(command)))));
+               read(command).orElse( //
+               wall(command).orElse( //
+               following(command).orElse( //
+               unknown(command)))));
     }
 
     static Optional<Unrestricted<DslCommand<Void>>> post(Command command) {
         if (isPost(command)) {
 
             Message message = parsePostMessage(command);
-            Unrestricted<DslCommand<Void>> saved = InMemoryOps.save(message); // io
+            Unrestricted<DslCommand<Void>> saved = InMemoryOps.save(message); // IO
 
             return Optional.of(saved);
         }

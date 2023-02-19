@@ -79,7 +79,7 @@ public class Unrestricted<TRANSFORMABLE> {
     }
 
     public Object run(DslVisitor v) {
-        // TODO this is fixing the type, we just want something for transformable
+        // TODO this is hardcoding the type, we just want something for transformable
         System.err.println("evaluating " + toString());
         return v.matchCommand((DslCommand<?>) transformable);
     }
