@@ -16,19 +16,17 @@ public abstract class Free<TRANSFORMABLE, VALUE> {
     }
 
     /**
-     * Shortcut for flatmap/liftF
+     * Shortcut for flatMap/liftF
      */
     public <R, RV> Free<R, RV> map(F.HigherMap<TRANSFORMABLE, VALUE, R, RV> mapper) {
         return flatMap(named(mapper, t -> liftF(mapper.apply(t))));
-        // return flatMap(t -> liftF(mapper.apply(t)));
     }
 
     /**
-     * Shortcut for flatmap/map
+     * Shortcut for flatMap/map
      */
     public <RV> Free<TRANSFORMABLE, RV> mapF(Function<VALUE, RV> mapper) {
         return flatMap(named(mapper, t -> {
-        // return flatMap(t -> {
             // assume TRANSFORMABLE of VALUE is a Transformable<VALUE> 
             Transformable value = (Transformable) t;
             Transformable mappedValue = value.map(mapper);
@@ -41,7 +39,7 @@ public abstract class Free<TRANSFORMABLE, VALUE> {
     public <R, RV> Free<R, RV> flatMap(F.HigherMap<? super TRANSFORMABLE, VALUE, Free<R, RV>, RV> mapper) {
         // this is a value. the mapper will "mapper.apply(this.transformable)"
         // so we need to create a tree now because the old value will need evaluation
-        // and the flatmap result will need evaluation.
+        // and the flatMap result will need evaluation.
         return new FreeFlatMapped<>(this, mapper);
     }
 

@@ -17,8 +17,8 @@ public class SocialNetwork {
     static Free<DslCommand, ?> app() {
         Free<DslCommand, BufferedReader> init = // 
                 InMemoryOps.initDatabase(). // IO
-                flatMap(named("openInput", ignore -> InputOps.openInput())); // IO
-        
+                        flatMap(named("openInput", ignore -> InputOps.openInput())); // IO
+
         return processInput(init);
     }
 
@@ -35,10 +35,10 @@ public class SocialNetwork {
 
         Function<Command, Free<DslCommand, ?>> processCommandF = named("processCommand",
                 commandCmd -> processCommand(inputCmd, commandCmd));
-        
-        Function<Free<DslCommand, Command>, Free<DslCommand, Free<DslCommand, ?>>> exec2 = named(
-                "map processCommand", uCommand -> uCommand.mapF(processCommandF));
-        
+
+        Function<Free<DslCommand, Command>, Free<DslCommand, Free<DslCommand, ?>>> exec2 = named("map processCommand",
+                uCommand -> uCommand.mapF(processCommandF));
+
         Free<DslCommand, ?> wtf = command.mapF(a -> a.mapF(exec2));
         return wtf;
     }
@@ -49,10 +49,9 @@ public class SocialNetwork {
         }
 
         Free<DslCommand, ?> result = Commands.handle(command);
-        Free<DslCommand, ?> remaining = 
-                result.flatMap(named("recurse processInput", ignore -> //
-                        processInput(inputCmd)));
-        
+        Free<DslCommand, ?> remaining = result //
+                .flatMap(named("recurse processInput", ignore -> processInput(inputCmd)));
+
         return remaining;
     }
 

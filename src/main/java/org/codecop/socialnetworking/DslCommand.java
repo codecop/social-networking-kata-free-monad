@@ -13,10 +13,6 @@ abstract class DslCommand implements Transformable {
         throw new UnsupportedOperationException("Commands cannot be mapped, only results");
     }
 
-    public <T> DslCommand flatMap(Function<? super T, ? extends DslCommand> mapper) {
-        throw new UnsupportedOperationException("Commands cannot be mapped, only results");
-    }
-
     @Override
     public String toString() {
         // debugging
@@ -27,7 +23,7 @@ abstract class DslCommand implements Transformable {
 
 class DslResult extends DslCommand {
 
-    public static <T> DslCommand of(T value) { // "pure"
+    public static DslCommand of(Object value) { // "pure"
         return new DslResult(value);
     }
 
@@ -54,10 +50,7 @@ class DslResult extends DslCommand {
     @Override
     public <T, U> DslCommand map(Function<? super T, ? extends U> mapper) {
         return of(mapper.apply((T) value));
+        // OK: only used inside Free
     }
 
-    @Override
-    public <T> DslCommand flatMap(Function<? super T, ? extends DslCommand> mapper) {
-        return mapper.apply((T) value);
-    }
 }
