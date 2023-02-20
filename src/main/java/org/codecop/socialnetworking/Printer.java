@@ -13,19 +13,7 @@ public class Printer {
 interface PrinterOps {
 
     public static Free<DslCommand, Void> println(Optional<String> text) {
-        return Free.liftF(createPrintln(text));
-    }
-
-    static Println createPrintln(Optional<String> text) {
-        return new Println(text);
-    }
-
-    public static Free<DslCommand, Void> println(DslCommand /*<Optional<String>>*/ text) {
-        return Free.liftF(mapPrintln(text));
-    }
-
-    static DslCommand mapPrintln(DslCommand /*<Optional<String>>*/ textCmd) {
-        return textCmd.flatMap(PrinterOps::createPrintln);
+        return Free.liftF(new Println(text));
     }
 
     static class Println extends DslCommand {

@@ -44,7 +44,7 @@ public class Commands {
             String user = parseReadUser(command);
             Free<DslCommand, Messages> messagesCmd = InMemoryOps.queryMessagesFor(user); // IO
             Free<DslCommand, Optional<String>> textsCmd = messagesCmd.mapF(Messages::texts);
-            Free<DslCommand, Void> printedTexts = textsCmd.flatMap(PrinterOps::println); // IO
+            Free<DslCommand, Free<DslCommand, Void>> printedTexts = textsCmd.mapF(PrinterOps::println); // IO
 
             return Optional.of(printedTexts);
         }
@@ -68,7 +68,8 @@ public class Commands {
                     .mapF(Commands::queryMessagesForAllUsers); // mixed
             Free<DslCommand, Free<DslCommand, Optional<String>>> textCmd = messagesCmd
                     .mapF(m -> m.mapF(Messages::usersWithTexts));
-            Free<DslCommand, Free<DslCommand, Void>> printedTexts = textCmd.mapF(m -> m.flatMap(PrinterOps::println)); // IO
+            Free<DslCommand, Free<DslCommand, Free<DslCommand, Void>>> printedTexts = textCmd
+                    .mapF(m -> m.mapF(PrinterOps::println)); // IO
 
             return Optional.of(printedTexts);
         }

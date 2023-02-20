@@ -50,7 +50,9 @@ public class F {
         }
     }
 
+    @SuppressWarnings("unused")
     interface HigherMap<T, TV, R, RV> extends Function<T, R> {
+        @Override
         R apply(T t);
     }
 
