@@ -32,17 +32,17 @@ public class DslVisitor {
     public Object handle(FreeFlatMapped u) {
         Object x = matchCommand(u.previous);
         System.err.println("evaluating " + u.toString());
-        Free<DslCommand<?>, ?> current = (Free<DslCommand<?>, ?>) u.mapper.apply(DslResult.of(x));
+        Free<DslCommand, ?> current = (Free<DslCommand, ?>) u.mapper.apply(DslResult.of(x));
         return matchCommand(current);
     }
 
     public Object handle(FreeValue u) {
         // TODO breaking encapsulation
         System.err.println("evaluating " + u.toString());
-        return matchCommand((DslCommand<?>) u.transformable);
+        return matchCommand((DslCommand) u.transformable);
     }
 
-    public Object matchCommand(DslCommand<?> dslCommand) {
+    public Object matchCommand(DslCommand dslCommand) {
         // InMemory
         if (dslCommand instanceof InitDatabase) {
             return handle((InitDatabase) dslCommand);
@@ -81,7 +81,7 @@ public class DslVisitor {
         // ---
 
         if (dslCommand instanceof DslResult) {
-            return handle((DslResult<?>) dslCommand);
+            return handle((DslResult) dslCommand);
         }
 
         throw new IllegalArgumentException(dslCommand.getClass().getName());
@@ -143,13 +143,13 @@ public class DslVisitor {
         return Timer.time();
     }
 
-    public <T> T handle(DslResult<T> f) {
-        T value = f.value;
+    public Object handle(DslResult f) {
+        Object value = f.value;
         if (value instanceof Free<?, ?>) {
             System.err.print("nested ...");
-            T result = (T) matchCommand((Free<?, ?>) value);
+            Object result = matchCommand((Free<?, ?>) value);
             // System.err.println("XXX " + result + " XXX");
-            return (T) Free.liftF(DslResult.of(result));
+            return Free.liftF(DslResult.of(result));
         }
         return value;
     }

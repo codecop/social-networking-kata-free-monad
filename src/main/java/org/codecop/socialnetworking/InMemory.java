@@ -54,18 +54,18 @@ public class InMemory {
 
 interface InMemoryOps {
 
-    static Free<DslCommand<Void>, Void> initDatabase() {
+    static Free<DslCommand, Void> initDatabase() {
         return Free.liftF(new InitDatabase());
     }
 
-    static class InitDatabase extends DslCommand<Void> {
+    static class InitDatabase extends DslCommand {
     }
 
-    static Free<DslCommand<Messages>, Messages> queryMessagesFor(String user) {
+    static Free<DslCommand, Messages> queryMessagesFor(String user) {
         return Free.liftF(new QueryMessages(user));
     }
 
-    static class QueryMessages extends DslCommand<Messages> {
+    static class QueryMessages extends DslCommand {
         final String user;
 
         public QueryMessages(String user) {
@@ -79,11 +79,11 @@ interface InMemoryOps {
         }
     }
 
-    static Free<DslCommand<Void>, Void> save(Message message) {
+    static Free<DslCommand, Void> save(Message message) {
         return Free.liftF(new SaveMessages(message));
     }
 
-    static class SaveMessages extends DslCommand<Void> {
+    static class SaveMessages extends DslCommand {
         final Message message;
 
         public SaveMessages(Message message) {
@@ -97,11 +97,11 @@ interface InMemoryOps {
         }
     }
 
-    static Free<DslCommand<WallUsers>, WallUsers> queryWallUsersFor(String user) {
+    static Free<DslCommand, WallUsers> queryWallUsersFor(String user) {
         return Free.liftF(new QueryWall(user));
     }
 
-    static class QueryWall extends DslCommand<WallUsers> {
+    static class QueryWall extends DslCommand {
         final String user;
 
         public QueryWall(String user) {
@@ -115,11 +115,11 @@ interface InMemoryOps {
         }
     }
 
-    static Free<DslCommand<Void>, Void> saveFollowingFor(String user, String other) {
+    static Free<DslCommand, Void> saveFollowingFor(String user, String other) {
         return Free.liftF(new SaveFollowing(user, other));
     }
 
-    static class SaveFollowing extends DslCommand<Void> {
+    static class SaveFollowing extends DslCommand {
         final String user;
         final String other;
 

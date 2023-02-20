@@ -12,7 +12,7 @@ public class Printer {
 
 interface PrinterOps {
 
-    public static Free<DslCommand<Void>, Void> println(Optional<String> text) {
+    public static Free<DslCommand, Void> println(Optional<String> text) {
         return Free.liftF(createPrintln(text));
     }
 
@@ -20,15 +20,15 @@ interface PrinterOps {
         return new Println(text);
     }
 
-    public static Free<DslCommand<Void>, Void> println(DslCommand<Optional<String>> text) {
+    public static Free<DslCommand, Void> println(DslCommand /*<Optional<String>>*/ text) {
         return Free.liftF(mapPrintln(text));
     }
 
-    static DslCommand<Void> mapPrintln(DslCommand<Optional<String>> textCmd) {
+    static DslCommand mapPrintln(DslCommand /*<Optional<String>>*/ textCmd) {
         return textCmd.flatMap(PrinterOps::createPrintln);
     }
 
-    static class Println extends DslCommand<Void> {
+    static class Println extends DslCommand {
         final Optional<String> text;
 
         public Println(Optional<String> text) {

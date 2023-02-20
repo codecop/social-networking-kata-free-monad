@@ -5,15 +5,15 @@ import java.util.function.Function;
 /**
  * The command is only a functor.
  */
-abstract class DslCommand<T> implements Transformable<T> {
+abstract class DslCommand implements Transformable {
 
     @Override
-    public <U> DslCommand<U> map(Function<? super T, ? extends U> mapper) {
+    public <T, U> DslCommand map(Function<? super T, ? extends U> mapper) {
         // only values can be mapped and translation creates values then in the interpret
         throw new UnsupportedOperationException("Commands cannot be mapped, only results");
     }
 
-    public <U> DslCommand<U> flatMap(Function<? super T, DslCommand<? extends U>> mapper) {
+    public <T> DslCommand flatMap(Function<? super T, ? extends DslCommand> mapper) {
         throw new UnsupportedOperationException("Commands cannot be mapped, only results");
     }
 
@@ -25,23 +25,23 @@ abstract class DslCommand<T> implements Transformable<T> {
 
 }
 
-class DslResult<T> extends DslCommand<T> {
+class DslResult extends DslCommand {
 
-    public static <T> DslCommand<T> of(T value) { // "pure"
-        return new DslResult<>(value);
+    public static <T> DslCommand of(T value) { // "pure"
+        return new DslResult(value);
     }
 
-    public static DslCommand<Void> nil() {
-        return new DslResult<>(null);
+    public static DslCommand nil() {
+        return new DslResult(null);
     }
 
-    final T value;
+    final Object value;
 
     private DslResult() {
         this(null);
     }
 
-    private DslResult(T value) {
+    private DslResult(Object value) {
         this.value = value;
     }
 
@@ -52,13 +52,12 @@ class DslResult<T> extends DslCommand<T> {
     }
     
     @Override
-    public <U> DslCommand<U> map(Function<? super T, ? extends U> mapper) {
-        return of(mapper.apply(value));
+    public <T, U> DslCommand map(Function<? super T, ? extends U> mapper) {
+        return of(mapper.apply((T) value));
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public <U> DslCommand<U> flatMap(Function<? super T, DslCommand<? extends U>> mapper) {
-        return (DslCommand<U>) mapper.apply(value);
+    public <T> DslCommand flatMap(Function<? super T, ? extends DslCommand> mapper) {
+        return mapper.apply((T) value);
     }
 }

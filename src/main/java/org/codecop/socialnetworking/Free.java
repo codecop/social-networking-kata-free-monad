@@ -30,8 +30,8 @@ public abstract class Free<TRANSFORMABLE, VALUE> {
         return flatMap(named(mapper, t -> {
         // return flatMap(t -> {
             // assume TRANSFORMABLE of VALUE is a Transformable<VALUE> 
-            Transformable<VALUE> value = (Transformable<VALUE>) t;
-            Transformable<RV> mappedValue = value.map(mapper);
+            Transformable value = (Transformable) t;
+            Transformable mappedValue = value.map(mapper);
             // assume Transformable<RV> is a TRANSFORMABLE of RV 
             TRANSFORMABLE cast = (TRANSFORMABLE) mappedValue;
             return Free.<TRANSFORMABLE, RV>liftF(cast);
@@ -85,6 +85,6 @@ public abstract class Free<TRANSFORMABLE, VALUE> {
 /**
  * Functor.
  */
-interface Transformable<T> {
-    <R> Transformable<R> map(Function<? super T, ? extends R> mapper);
+interface Transformable {
+    <T, R> Transformable map(Function<? super T, ? extends R> mapper);
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -94,6 +95,20 @@ class Messages implements Joining<Messages> {
         return new Messages(Collections.emptyList());
     }
 
+}
+
+class Joiner<T extends Joining<T>> implements Function<T, T> {
+    private T joined;
+
+    public Joiner(T initial) {
+        joined = initial;
+    }
+
+    @Override
+    public T apply(T nextMessages) {
+        joined = joined.join(nextMessages);
+        return joined;
+    }
 }
 
 class WallUsers {
