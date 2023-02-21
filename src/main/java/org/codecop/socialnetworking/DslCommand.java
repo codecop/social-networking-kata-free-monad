@@ -13,6 +13,10 @@ abstract class DslCommand implements Transformable {
         throw new UnsupportedOperationException("Commands cannot be mapped, only results");
     }
 
+    public <T> DslCommand flatMap(Function<? super T, ? extends DslCommand> mapper) {
+        throw new UnsupportedOperationException("Commands cannot be mapped, only results");
+    }
+    
     @Override
     public String toString() {
         // debugging
@@ -53,4 +57,10 @@ class DslResult extends DslCommand {
         // OK: only used inside Free
     }
 
+    @Override
+    public <T> DslCommand flatMap(Function<? super T, ? extends DslCommand> mapper) {
+        return mapper.apply((T) value);
+        // TODO restrict usage
+    }
+    
 }

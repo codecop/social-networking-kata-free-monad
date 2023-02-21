@@ -92,10 +92,21 @@ public class Commands {
 
     private static Free<DslCommand, Messages> reduce(Stream<Free<DslCommand, Messages>> messages) {
         Free<DslCommand, Messages> initial = Free.liftF(DslResult.of(Messages.empty()));
-        Joiner<Messages> joiner = new Joiner<>(Messages.empty()); // TODO Joiner has state
-        Free<DslCommand, Messages> result = messages.reduce(initial, //
-                (ignore, message) -> message.mapF(joiner));
-        return result;
+        return messages.reduce(initial, Commands::join);
+    }
+
+//    private static Free<DslCommand, Messages> join1(Free<DslCommand, Messages> fma, Free<DslCommand, Messages> fmb) {
+//        return fma.mapF(ma -> {
+//            return fmb.mapF(mb -> {
+//                return ma.join(mb);
+//            });
+//        });
+//    }
+
+    private static Free<DslCommand, Messages> join(Free<DslCommand, Messages> ua, Free<DslCommand, Messages> ub) {
+        return ub.flatMap(bs -> ua.map(as -> {
+            return as.flatMap(a -> bs.map(b -> ((Messages)a).join((Messages)b)));
+        }));
     }
 
     public static Optional<Free<DslCommand, ?>> following(Command command) {
