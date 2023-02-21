@@ -17,13 +17,6 @@ public abstract class Free<TRANSFORMABLE, VALUE> {
     }
 
     /**
-     * Shortcut for flatMap/liftF
-     */
-    public <R, RV> Free<R, RV> map(F.HigherMap<TRANSFORMABLE, VALUE, R, RV> mapper) {
-        return flatMap(named(mapper, t -> liftF(mapper.apply(t))));
-    }
-
-    /**
      * Shortcut for flatMap/map
      */
     public <RV> Free<TRANSFORMABLE, RV> mapF(Function<VALUE, RV> mapper) {
@@ -38,6 +31,7 @@ public abstract class Free<TRANSFORMABLE, VALUE> {
         return (Transformable) t;
     }
 
+    @SuppressWarnings("unchecked")
     private TRANSFORMABLE fromFunctor(Transformable t) {
         // assume Transformable<RV> is a TRANSFORMABLE of RV 
         return (TRANSFORMABLE) t;
@@ -52,14 +46,15 @@ public abstract class Free<TRANSFORMABLE, VALUE> {
 
     @SuppressWarnings("unchecked")
     public Free<TRANSFORMABLE, VALUE> join(Free<TRANSFORMABLE, VALUE> other, BiFunction<VALUE, VALUE, VALUE> joiner) {
-        return other.flatMap(named("join", otherT -> //
-            map(t -> //
-                fromFunctor(asFunctor(t).flatMap(value -> //
-                    asFunctor(otherT).map(otherValue -> //
-                        joiner.apply((VALUE) value, (VALUE) otherValue)))))));
+        return other.flatMap(named("outer join", otherT -> //
+                        flatMap(named("inner join", t -> //
+                            Free.liftF(fromFunctor(asFunctor(t).flatMap(value -> //
+                                asFunctor(otherT).map(otherValue -> //
+                                    joiner.apply((VALUE) value, (VALUE) otherValue)))))))));
     }
-    
+
     static class FreeValue<TRANSFORMABLE, VALUE> extends Free<TRANSFORMABLE, VALUE> {
+        
         final TRANSFORMABLE transformable;
 
         /**
@@ -84,7 +79,7 @@ public abstract class Free<TRANSFORMABLE, VALUE> {
         final Free<T, TV> previous;
         final F.HigherMap<? super T, TV, Free<R, RV>, RV> mapper;
 
-        public FreeFlatMapped(Free<T, TV> previous, F.HigherMap<? super T, TV, Free<R, RV>, RV> mapper) {
+        private FreeFlatMapped(Free<T, TV> previous, F.HigherMap<? super T, TV, Free<R, RV>, RV> mapper) {
             this.previous = previous;
             this.mapper = mapper;
         }
@@ -95,7 +90,6 @@ public abstract class Free<TRANSFORMABLE, VALUE> {
             return "[" + previous + mapper + "]";
         }
     }
-
 }
 
 /**
@@ -103,5 +97,6 @@ public abstract class Free<TRANSFORMABLE, VALUE> {
  */
 interface Transformable {
     <T, R> Transformable map(Function<? super T, ? extends R> mapper);
+
     <T> Transformable flatMap(Function<? super T, ? extends Transformable> mapper);
 }

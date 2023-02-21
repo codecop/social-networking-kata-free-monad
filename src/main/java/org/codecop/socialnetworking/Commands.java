@@ -4,7 +4,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
- * Parsing and executing. Not from domain. Non pure actions are Free Monads.
+ * Parsing and executing. Not from domain. Non pure actions are wrapped in Free Monads.
  */
 public class Commands {
 
@@ -20,9 +20,9 @@ public class Commands {
         if (isPost(command)) {
 
             Message message = parsePostMessage(command);
-            Free<DslCommand, Void> save = InMemoryOps.save(message); // IO
+            Free<DslCommand, Void> savedMessage = InMemoryOps.save(message); // IO
 
-            return Optional.of(save);
+            return Optional.of(savedMessage);
         }
         return Optional.empty();
     }
@@ -42,9 +42,9 @@ public class Commands {
         if (isRead(command)) {
 
             String user = parseReadUser(command);
-            Free<DslCommand, Messages> messagesCmd = InMemoryOps.queryMessagesFor(user); // IO
-            Free<DslCommand, Optional<String>> textsCmd = messagesCmd.mapF(Messages::texts);
-            Free<DslCommand, Free<DslCommand, Void>> printedTexts = textsCmd.mapF(PrinterOps::println); // IO
+            Free<DslCommand, Messages> messages = InMemoryOps.queryMessagesFor(user); // IO
+            Free<DslCommand, Optional<String>> texts = messages.mapF(Messages::texts);
+            Free<DslCommand, Free<DslCommand, Void>> printedTexts = texts.mapF(PrinterOps::println); // IO
 
             return Optional.of(printedTexts);
         }
@@ -63,13 +63,13 @@ public class Commands {
         if (isWall(command)) {
 
             String user = parseWallUser(command);
-            Free<DslCommand, WallUsers> uWallUsersCmd = InMemoryOps.queryWallUsersFor(user); // IO
-            Free<DslCommand, Free<DslCommand, Messages>> messagesCmd = uWallUsersCmd
+            Free<DslCommand, WallUsers> wallUsers = InMemoryOps.queryWallUsersFor(user); // IO
+            Free<DslCommand, Free<DslCommand, Messages>> allMessages = wallUsers
                     .mapF(Commands::queryMessagesForAllUsers); // mixed
-            Free<DslCommand, Free<DslCommand, Optional<String>>> textCmd = messagesCmd
-                    .mapF(m -> m.mapF(Messages::usersWithTexts));
-            Free<DslCommand, Free<DslCommand, Free<DslCommand, Void>>> printedTexts = textCmd
-                    .mapF(m -> m.mapF(PrinterOps::println)); // IO
+            Free<DslCommand, Free<DslCommand, Optional<String>>> allTexts = allMessages
+                    .mapF(nested -> nested.mapF(Messages::usersWithTexts));
+            Free<DslCommand, Free<DslCommand, Free<DslCommand, Void>>> printedTexts = allTexts
+                    .mapF(nested -> nested.mapF(PrinterOps::println)); // IO
 
             return Optional.of(printedTexts);
         }
@@ -144,6 +144,7 @@ class Command {
 
     @Override
     public String toString() {
+        // debugging
         return "User Command \"" + line + "\" at " + atTime;
     }
 }

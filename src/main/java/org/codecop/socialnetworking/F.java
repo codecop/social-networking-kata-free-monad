@@ -4,7 +4,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- * Functional helpers.
+ * Functional debug helpers.
  */
 public class F {
 
@@ -24,14 +24,10 @@ public class F {
             StackTraceElement[] stackTrace = new RuntimeException().getStackTrace();
             int i = 0;
             while (stackTrace[i].getClassName().endsWith("F$NamedFunction")
-                    || stackTrace[i].getClassName().endsWith("F")
-                    //|| stackTrace[i].getClassName().endsWith("Unrestricted")
-                    //|| stackTrace[i].getClassName().endsWith("DslResult")
-                    ) {
+                    || stackTrace[i].getClassName().endsWith("F")) {
                 i++;
             }
-            StackTraceElement x = stackTrace[i];
-            return x;
+            return stackTrace[i];
         }
 
         @Override

@@ -3,31 +3,31 @@ package org.codecop.socialnetworking;
 import java.util.function.Function;
 
 /**
- * The command is only a functor.
+ * The command is only a functor. Must have flatMap for reduce.
  */
 abstract class DslCommand implements Transformable {
 
     @Override
     public <T, U> DslCommand map(Function<? super T, ? extends U> mapper) {
-        throw new UnsupportedOperationException("Commands cannot be mapped, only results");
+        throw new UnsupportedOperationException("DslCommand cannot be mapped, only results");
     }
 
     @Override
     public <T> DslCommand flatMap(Function<? super T, ? extends Transformable> mapper) {
-        throw new UnsupportedOperationException("Commands cannot be mapped, only results");
+        throw new UnsupportedOperationException("DslCommand cannot be mapped, only results");
     }
 
     @Override
     public String toString() {
         // debugging
-        return "Command " + getClass().getSimpleName();
+        return "DslCommand " + getClass().getSimpleName();
     }
 
 }
 
-class DslResult extends DslCommand {
+class DslResult/*<T>*/ extends DslCommand {
 
-    public static DslCommand of(Object value) {
+    public static /*<T>*/ DslCommand of(Object value) {
         return new DslResult(value);
     }
 
@@ -35,7 +35,7 @@ class DslResult extends DslCommand {
         return new DslResult(null);
     }
 
-    final Object value;
+    final /*<T>*/ Object value;
 
     private DslResult() {
         this(null);
@@ -47,14 +47,14 @@ class DslResult extends DslCommand {
 
     @Override
     public <T, U> DslCommand map(Function<? super T, ? extends U> mapper) {
+        // only used inside Free
         return of(mapper.apply((T) value));
-        // OK: only used inside Free
     }
 
     @Override
     public <T> DslCommand flatMap(Function<? super T, ? extends Transformable> mapper) {
+        // only used inside Free
         return (DslCommand) mapper.apply((T) value);
-        // TODO restrict usage
     }
 
     @Override

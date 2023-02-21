@@ -94,7 +94,6 @@ class Messages {
     public static Messages empty() {
         return new Messages(Collections.emptyList());
     }
-
 }
 
 class WallUsers {

@@ -29,5 +29,4 @@ interface PrinterOps {
             return super.toString() + " of " + text;
         }
     }
-
 }
