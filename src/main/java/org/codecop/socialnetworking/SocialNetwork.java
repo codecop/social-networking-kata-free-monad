@@ -11,7 +11,7 @@ public class SocialNetwork {
     public static void main(String[] args) throws IOException {
         Free<DslCommand, ?> app = app();
         System.err.println(app);
-        Interpret.it(app);
+        Ex.rethrowIoException(() -> new DslVisitor().matchCommand(app));
     }
 
     static Free<DslCommand, ?> app() {

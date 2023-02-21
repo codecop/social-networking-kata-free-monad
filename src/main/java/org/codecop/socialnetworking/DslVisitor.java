@@ -3,6 +3,7 @@ package org.codecop.socialnetworking;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.Objects;
 
 import org.codecop.socialnetworking.Free.FreeValue;
 import org.codecop.socialnetworking.Free.FreeFlatMapped;
@@ -18,15 +19,17 @@ import org.codecop.socialnetworking.TimerOps.GetTime;
 
 public class DslVisitor {
 
-    public Object matchCommand(Free u) {
-        if (u instanceof FreeFlatMapped) {
-            return handle((FreeFlatMapped) u);
+    public Object matchCommand(Free root) {
+        Objects.requireNonNull(root);
+
+        if (root instanceof FreeFlatMapped) {
+            return handle((FreeFlatMapped) root);
         }
-        if (u instanceof FreeValue) {
-            return handle((FreeValue) u);
+        if (root instanceof FreeValue) {
+            return handle((FreeValue) root);
         }
 
-        throw new IllegalArgumentException(u.getClass().getName());
+        throw new IllegalArgumentException(root.getClass().getName());
     }
 
     public Object handle(FreeFlatMapped u) {
@@ -127,11 +130,7 @@ public class DslVisitor {
     }
 
     public String handle(ReadStdIn f) {
-        try {
-            return Input.readLine(f.in);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+        return Ex.uncheckIoException(() -> Input.readLine(f.in));
     }
 
     public Void handle(Println f) {
