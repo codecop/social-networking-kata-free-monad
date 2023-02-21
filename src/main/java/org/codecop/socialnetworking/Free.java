@@ -5,6 +5,8 @@ import static org.codecop.socialnetworking.F.named;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import org.codecop.socialnetworking.F.HigherMap;
+
 /**
  * Simplified Free Monad.
  * 
@@ -37,7 +39,7 @@ public abstract class Free<TRANSFORMABLE, VALUE> {
         return (TRANSFORMABLE) t;
     }
 
-    public <R, RV> Free<R, RV> flatMap(F.HigherMap<? super TRANSFORMABLE, VALUE, Free<R, RV>, RV> mapper) {
+    public <R, RV> Free<R, RV> flatMap(HigherMap<? super TRANSFORMABLE, VALUE, Free<R, RV>, RV> mapper) {
         // this is a value. the mapper will "mapper.apply(this.transformable)"
         // so we need to create a tree now because the old value will need evaluation
         // and the flatMap result will need evaluation.
@@ -47,14 +49,14 @@ public abstract class Free<TRANSFORMABLE, VALUE> {
     @SuppressWarnings("unchecked")
     public Free<TRANSFORMABLE, VALUE> join(Free<TRANSFORMABLE, VALUE> other, BiFunction<VALUE, VALUE, VALUE> joiner) {
         return other.flatMap(named("outer join", otherT -> //
-                        flatMap(named("inner join", t -> //
-                            Free.liftF(fromFunctor(asFunctor(t).flatMap(value -> //
-                                asFunctor(otherT).map(otherValue -> //
-                                    joiner.apply((VALUE) value, (VALUE) otherValue)))))))));
+            flatMap(named("inner join", t -> //
+                Free.liftF(fromFunctor(asFunctor(t).flatMap(value -> //
+                    asFunctor(otherT).map(otherValue -> //
+                        joiner.apply((VALUE) value, (VALUE) otherValue)))))))));
     }
 
     static class FreeValue<TRANSFORMABLE, VALUE> extends Free<TRANSFORMABLE, VALUE> {
-        
+
         final TRANSFORMABLE transformable;
 
         /**
@@ -77,9 +79,9 @@ public abstract class Free<TRANSFORMABLE, VALUE> {
     static class FreeFlatMapped<T, TV, R, RV> extends Free<R, RV> {
 
         final Free<T, TV> previous;
-        final F.HigherMap<? super T, TV, Free<R, RV>, RV> mapper;
+        final HigherMap<? super T, TV, Free<R, RV>, RV> mapper;
 
-        private FreeFlatMapped(Free<T, TV> previous, F.HigherMap<? super T, TV, Free<R, RV>, RV> mapper) {
+        private FreeFlatMapped(Free<T, TV> previous, HigherMap<? super T, TV, Free<R, RV>, RV> mapper) {
             this.previous = previous;
             this.mapper = mapper;
         }
