@@ -1,12 +1,10 @@
 package org.codecop.socialnetworking;
 
 import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.Objects;
 
-import org.codecop.socialnetworking.Free.FreeValue;
 import org.codecop.socialnetworking.Free.FreeFlatMapped;
+import org.codecop.socialnetworking.Free.FreeValue;
 import org.codecop.socialnetworking.InMemoryOps.InitDatabase;
 import org.codecop.socialnetworking.InMemoryOps.QueryMessages;
 import org.codecop.socialnetworking.InMemoryOps.QueryWall;
@@ -19,135 +17,131 @@ import org.codecop.socialnetworking.TimerOps.GetTime;
 
 public class DslVisitor {
 
-    public Object matchCommand(Free root) {
-        Objects.requireNonNull(root);
+    public Object handleFree(Free<DslCommand, ?> free) {
+        Objects.requireNonNull(free);
 
-        if (root instanceof FreeFlatMapped) {
-            return handle((FreeFlatMapped) root);
+        if (free instanceof FreeFlatMapped) {
+            return handle((FreeFlatMapped<DslCommand, ?, DslCommand, ?>) free);
         }
-        if (root instanceof FreeValue) {
-            return handle((FreeValue) root);
+        if (free instanceof FreeValue) {
+            return handle((FreeValue<DslCommand, ?>) free);
         }
 
-        throw new IllegalArgumentException(root.getClass().getName());
+        throw new IllegalArgumentException(free.getClass().getName());
     }
 
-    public Object handle(FreeFlatMapped u) {
-        Object x = matchCommand(u.previous);
-        System.err.println("evaluating " + u.toString());
-        Free<DslCommand, ?> current = (Free<DslCommand, ?>) u.mapper.apply(DslResult.of(x));
-        return matchCommand(current);
+    public Object handle(FreeFlatMapped<DslCommand, ?, DslCommand, ?> free) {
+        Object previous = handleFree(free.previous);
+        System.err.println("evaluating " + free.toString());
+        Free<DslCommand, ?> current = free.mapper.apply(DslResult.of(previous));
+        return handleFree(current);
     }
 
-    public Object handle(FreeValue u) {
-        // TODO breaking encapsulation
-        System.err.println("evaluating " + u.toString());
-        return matchCommand((DslCommand) u.transformable);
+    public Object handle(FreeValue<DslCommand, ?> free) {
+        System.err.println("evaluating " + free.toString());
+        return handleCommand(free.transformable);
     }
 
-    public Object matchCommand(DslCommand dslCommand) {
+    public Object handleCommand(DslCommand command) {
         // InMemory
-        if (dslCommand instanceof InitDatabase) {
-            return handle((InitDatabase) dslCommand);
+        if (command instanceof InitDatabase) {
+            return handle((InitDatabase) command);
         }
-        if (dslCommand instanceof QueryMessages) {
-            return handle((QueryMessages) dslCommand);
+        if (command instanceof QueryMessages) {
+            return handle((QueryMessages) command);
         }
-        if (dslCommand instanceof QueryWall) {
-            return handle((QueryWall) dslCommand);
+        if (command instanceof QueryWall) {
+            return handle((QueryWall) command);
         }
-        if (dslCommand instanceof SaveFollowing) {
-            return handle((SaveFollowing) dslCommand);
+        if (command instanceof SaveFollowing) {
+            return handle((SaveFollowing) command);
         }
-        if (dslCommand instanceof SaveMessages) {
-            return handle((SaveMessages) dslCommand);
+        if (command instanceof SaveMessages) {
+            return handle((SaveMessages) command);
         }
 
         // Input
-        if (dslCommand instanceof OpenStdIn) {
-            return handle((OpenStdIn) dslCommand);
+        if (command instanceof OpenStdIn) {
+            return handle((OpenStdIn) command);
         }
-        if (dslCommand instanceof ReadStdIn) {
-            return handle((ReadStdIn) dslCommand);
+        if (command instanceof ReadStdIn) {
+            return handle((ReadStdIn) command);
         }
 
         // Print
-        if (dslCommand instanceof Println) {
-            return handle((Println) dslCommand);
+        if (command instanceof Println) {
+            return handle((Println) command);
         }
 
         // Timer
-        if (dslCommand instanceof GetTime) {
-            return handle((GetTime) dslCommand);
+        if (command instanceof GetTime) {
+            return handle((GetTime) command);
         }
 
-        // ---
-
-        if (dslCommand instanceof DslResult) {
-            return handle((DslResult) dslCommand);
+        if (command instanceof DslResult) {
+            return handle((DslResult) command);
         }
 
-        throw new IllegalArgumentException(dslCommand.getClass().getName());
+        throw new IllegalArgumentException(command.getClass().getName());
     }
 
-    private boolean init = false;
+    private boolean initDatabase = false;
 
     public Void handle(@SuppressWarnings("unused") InitDatabase f) {
         // PROBLEM: This is a side effect. I must only run it once.
-        if (!init) {
-            init = true;
+        if (!initDatabase) {
+            initDatabase = true;
             InMemory.initDatabase();
         }
         return null;
     }
 
-    public Messages handle(QueryMessages f) {
-        return InMemory.queryMessagesFor(f.user);
+    public Messages handle(QueryMessages command) {
+        return InMemory.queryMessagesFor(command.user);
     }
 
-    public WallUsers handle(QueryWall f) {
-        return InMemory.queryWallUsersFor(f.user);
+    public WallUsers handle(QueryWall command) {
+        return InMemory.queryWallUsersFor(command.user);
     }
 
-    public Void handle(SaveFollowing f) {
-        InMemory.saveFollowingFor(f.user, f.other);
+    public Void handle(SaveFollowing command) {
+        InMemory.saveFollowingFor(command.user, command.other);
         return null;
     }
 
-    public Void handle(SaveMessages f) {
-        InMemory.save(f.message);
+    public Void handle(SaveMessages command) {
+        InMemory.save(command.message);
         return null;
     }
 
-    private BufferedReader first;
+    private BufferedReader firstOpenStdIn;
 
-    public BufferedReader handle(@SuppressWarnings("unused") OpenStdIn f) {
+    public BufferedReader handle(@SuppressWarnings("unused") OpenStdIn command) {
         // PROBLEM: This is not transparent, but a side effect. I must return the same all times.
-        if (first == null) {
-            first = Input.initInput();
+        if (firstOpenStdIn == null) {
+            firstOpenStdIn = Input.initInput();
         }
-        return first;
+        return firstOpenStdIn;
     }
 
-    public String handle(ReadStdIn f) {
-        return Ex.uncheckIoException(() -> Input.readLine(f.in));
+    public String handle(ReadStdIn command) {
+        return Ex.uncheckIoException(() -> Input.readLine(command.in));
     }
 
-    public Void handle(Println f) {
-        Printer.println(f.text);
+    public Void handle(Println command) {
+        Printer.println(command.text);
         return null;
     }
 
-    public Long handle(@SuppressWarnings("unused") GetTime f) {
+    public Long handle(@SuppressWarnings("unused") GetTime command) {
         return Timer.time();
     }
 
-    public Object handle(DslResult f) {
-        Object value = f.value;
-        if (value instanceof Free<?, ?>) {
+    public /*<T>*/ Object handle(DslResult command) {
+        Object value = command.value;
+        if (value instanceof Free) {
             System.err.print("nested ...");
-            Object result = matchCommand((Free<?, ?>) value);
-            // System.err.println("XXX " + result + " XXX");
+            Object result = handleFree((Free<DslCommand, ?>) value);
             return Free.liftF(DslResult.of(result));
         }
         return value;
