@@ -9,14 +9,14 @@ abstract class DslCommand implements Transformable {
 
     @Override
     public <T, U> DslCommand map(Function<? super T, ? extends U> mapper) {
-        // only values can be mapped and translation creates values then in the interpret
         throw new UnsupportedOperationException("Commands cannot be mapped, only results");
     }
 
-    public <T> DslCommand flatMap(Function<? super T, ? extends DslCommand> mapper) {
+    @Override
+    public <T> DslCommand flatMap(Function<? super T, ? extends Transformable> mapper) {
         throw new UnsupportedOperationException("Commands cannot be mapped, only results");
     }
-    
+
     @Override
     public String toString() {
         // debugging
@@ -27,7 +27,7 @@ abstract class DslCommand implements Transformable {
 
 class DslResult extends DslCommand {
 
-    public static DslCommand of(Object value) { // "pure"
+    public static DslCommand of(Object value) {
         return new DslResult(value);
     }
 
@@ -46,21 +46,21 @@ class DslResult extends DslCommand {
     }
 
     @Override
-    public String toString() {
-        // debugging
-        return super.toString() + " with " + value;
-    }
-    
-    @Override
     public <T, U> DslCommand map(Function<? super T, ? extends U> mapper) {
         return of(mapper.apply((T) value));
         // OK: only used inside Free
     }
 
     @Override
-    public <T> DslCommand flatMap(Function<? super T, ? extends DslCommand> mapper) {
-        return mapper.apply((T) value);
+    public <T> DslCommand flatMap(Function<? super T, ? extends Transformable> mapper) {
+        return (DslCommand) mapper.apply((T) value);
         // TODO restrict usage
     }
-    
+
+    @Override
+    public String toString() {
+        // debugging
+        return super.toString() + " with " + value;
+    }
+
 }

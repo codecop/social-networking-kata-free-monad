@@ -2,6 +2,7 @@ package org.codecop.socialnetworking;
 
 import static org.codecop.socialnetworking.F.named;
 
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -27,13 +28,19 @@ public abstract class Free<TRANSFORMABLE, VALUE> {
      */
     public <RV> Free<TRANSFORMABLE, RV> mapF(Function<VALUE, RV> mapper) {
         return flatMap(named(mapper, t -> {
-            // assume TRANSFORMABLE of VALUE is a Transformable<VALUE> 
-            Transformable transformAble = (Transformable) t;
-            Transformable mappedTransformAble = transformAble.map(mapper);
-            // assume Transformable<RV> is a TRANSFORMABLE of RV 
-            TRANSFORMABLE cast = (TRANSFORMABLE) mappedTransformAble;
-            return Free.<TRANSFORMABLE, RV>liftF(cast);
+            TRANSFORMABLE mapped = fromFunctor(asFunctor(t).map(mapper));
+            return Free.<TRANSFORMABLE, RV>liftF(mapped);
         }));
+    }
+
+    private Transformable asFunctor(TRANSFORMABLE t) {
+        // assume TRANSFORMABLE of VALUE is a Transformable<VALUE> 
+        return (Transformable) t;
+    }
+
+    private TRANSFORMABLE fromFunctor(Transformable t) {
+        // assume Transformable<RV> is a TRANSFORMABLE of RV 
+        return (TRANSFORMABLE) t;
     }
 
     public <R, RV> Free<R, RV> flatMap(F.HigherMap<? super TRANSFORMABLE, VALUE, Free<R, RV>, RV> mapper) {
@@ -43,6 +50,15 @@ public abstract class Free<TRANSFORMABLE, VALUE> {
         return new FreeFlatMapped<>(this, mapper);
     }
 
+    @SuppressWarnings("unchecked")
+    public Free<TRANSFORMABLE, VALUE> join(Free<TRANSFORMABLE, VALUE> other, BiFunction<VALUE, VALUE, VALUE> joiner) {
+        return other.flatMap(named("join", otherT -> //
+            map(t -> //
+                fromFunctor(asFunctor(t).flatMap(value -> //
+                    asFunctor(otherT).map(otherValue -> //
+                        joiner.apply((VALUE) value, (VALUE) otherValue)))))));
+    }
+    
     static class FreeValue<TRANSFORMABLE, VALUE> extends Free<TRANSFORMABLE, VALUE> {
         final TRANSFORMABLE transformable;
 
@@ -83,8 +99,9 @@ public abstract class Free<TRANSFORMABLE, VALUE> {
 }
 
 /**
- * Functor.
+ * Functor. To have "reduce", need a Monad.
  */
 interface Transformable {
     <T, R> Transformable map(Function<? super T, ? extends R> mapper);
+    <T> Transformable flatMap(Function<? super T, ? extends Transformable> mapper);
 }

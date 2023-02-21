@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -49,11 +48,7 @@ class Message implements Comparable<Message> {
     }
 }
 
-interface Joining<T> {
-    public T join(T other);
-}
-
-class Messages implements Joining<Messages> {
+class Messages {
 
     private final List<Message> messages;
 
@@ -88,8 +83,7 @@ class Messages implements Joining<Messages> {
         // debugging
         return usersWithTexts().orElse("<empty>");
     }
-    
-    @Override
+
     public Messages join(Messages other) {
         List<Message> newMessages = new ArrayList<>();
         newMessages.addAll(messages);
@@ -101,20 +95,6 @@ class Messages implements Joining<Messages> {
         return new Messages(Collections.emptyList());
     }
 
-}
-
-class Joiner<T extends Joining<T>> implements Function<T, T> {
-    private T joined;
-
-    public Joiner(T initial) {
-        joined = initial;
-    }
-
-    @Override
-    public T apply(T nextMessages) {
-        joined = joined.join(nextMessages);
-        return joined;
-    }
 }
 
 class WallUsers {
