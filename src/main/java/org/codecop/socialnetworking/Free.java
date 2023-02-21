@@ -28,10 +28,10 @@ public abstract class Free<TRANSFORMABLE, VALUE> {
     public <RV> Free<TRANSFORMABLE, RV> mapF(Function<VALUE, RV> mapper) {
         return flatMap(named(mapper, t -> {
             // assume TRANSFORMABLE of VALUE is a Transformable<VALUE> 
-            Transformable value = (Transformable) t;
-            Transformable mappedValue = value.map(mapper);
+            Transformable transformAble = (Transformable) t;
+            Transformable mappedTransformAble = transformAble.map(mapper);
             // assume Transformable<RV> is a TRANSFORMABLE of RV 
-            TRANSFORMABLE cast = (TRANSFORMABLE) mappedValue;
+            TRANSFORMABLE cast = (TRANSFORMABLE) mappedTransformAble;
             return Free.<TRANSFORMABLE, RV>liftF(cast);
         }));
     }
@@ -58,6 +58,7 @@ public abstract class Free<TRANSFORMABLE, VALUE> {
 
         @Override
         public String toString() {
+            // debugging
             return "[" + transformable + "]";
         }
     }
@@ -74,6 +75,7 @@ public abstract class Free<TRANSFORMABLE, VALUE> {
 
         @Override
         public String toString() {
+            // debugging
             return "[" + previous + mapper + "]";
         }
     }

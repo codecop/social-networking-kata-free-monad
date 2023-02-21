@@ -84,6 +84,12 @@ class Messages implements Joining<Messages> {
     }
 
     @Override
+    public String toString() {
+        // debugging
+        return usersWithTexts().orElse("<empty>");
+    }
+    
+    @Override
     public Messages join(Messages other) {
         List<Message> newMessages = new ArrayList<>();
         newMessages.addAll(messages);
