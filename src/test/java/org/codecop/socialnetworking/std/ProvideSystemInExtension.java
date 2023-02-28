@@ -1,4 +1,4 @@
-package org.codecop.base;
+package org.codecop.socialnetworking.std;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

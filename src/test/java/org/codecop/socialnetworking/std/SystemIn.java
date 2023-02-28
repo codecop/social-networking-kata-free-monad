@@ -1,4 +1,4 @@
-package org.codecop.base;
+package org.codecop.socialnetworking.std;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

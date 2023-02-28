@@ -6,10 +6,10 @@ import java.io.IOException;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import org.codecop.base.CaptureSystemOutExtension;
-import org.codecop.base.ProvideSystemInExtension;
-import org.codecop.base.SystemIn;
-import org.codecop.base.SystemOut;
+import org.codecop.socialnetworking.std.CaptureSystemOutExtension;
+import org.codecop.socialnetworking.std.ProvideSystemInExtension;
+import org.codecop.socialnetworking.std.SystemIn;
+import org.codecop.socialnetworking.std.SystemOut;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
