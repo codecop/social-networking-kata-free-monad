@@ -8,7 +8,7 @@ import java.util.stream.Stream;
  */
 public class Commands {
 
-    static Free<DomainOps, ?> handle(Command command) {
+    static Free<DomainOps, Void> handle(Command command) {
         return post(command).orElse( //
                read(command).orElse( //
                wall(command).orElse( //
@@ -16,7 +16,7 @@ public class Commands {
                unknown(command)))));
     }
 
-    static Optional<Free<DomainOps, ?>> post(Command command) {
+    static Optional<Free<DomainOps, Void>> post(Command command) {
         if (isPost(command)) {
 
             Message message = parsePostMessage(command);
@@ -38,13 +38,13 @@ public class Commands {
         return new Message(user, text, command.atTime);
     }
 
-    public static Optional<Free<DomainOps, ?>> read(Command command) {
+    public static Optional<Free<DomainOps, Void>> read(Command command) {
         if (isRead(command)) {
 
             String user = parseReadUser(command);
             Free<DomainOps, Messages> messages = InMemoryOps.queryMessagesFor(user); // IO
             Free<DomainOps, Optional<String>> texts = messages.map(Messages::texts);
-            Free<DomainOps, Free<DomainOps, Void>> printedTexts = texts.map(PrinterOps::println); // IO
+            Free<DomainOps, Void> printedTexts = texts.flatMap(PrinterOps::println); // IO
 
             return Optional.of(printedTexts);
         }
@@ -59,17 +59,14 @@ public class Commands {
         return command.line;
     }
 
-    public static Optional<Free<DomainOps, ?>> wall(Command command) {
+    public static Optional<Free<DomainOps, Void>> wall(Command command) {
         if (isWall(command)) {
 
             String user = parseWallUser(command);
             Free<DomainOps, WallUsers> wallUsers = InMemoryOps.queryWallUsersFor(user); // IO
-            Free<DomainOps, Free<DomainOps, Messages>> allMessages = wallUsers
-                    .map(Commands::queryMessagesForAllUsers); // mixed
-            Free<DomainOps, Free<DomainOps, Optional<String>>> allTexts = allMessages
-                    .map(nested -> nested.map(Messages::usersWithTexts));
-            Free<DomainOps, Free<DomainOps, Free<DomainOps, Void>>> printedTexts = allTexts
-                    .map(nested -> nested.map(PrinterOps::println)); // IO
+            Free<DomainOps, Messages> allMessages = wallUsers.flatMap(Commands::queryMessagesForAllUsers); // mixed
+            Free<DomainOps, Optional<String>> allTexts = allMessages.map(Messages::usersWithTexts);
+            Free<DomainOps, Void> printedTexts = allTexts.flatMap(PrinterOps::println); // IO
 
             return Optional.of(printedTexts);
         }
@@ -95,7 +92,7 @@ public class Commands {
         return messages.reduce(initial, (a, b) -> a.join(b, Messages::join));
     }
 
-    public static Optional<Free<DomainOps, ?>> following(Command command) {
+    public static Optional<Free<DomainOps, Void>> following(Command command) {
         if (isFollowing(command)) {
 
             Following following = parseFollowing(command);
@@ -127,7 +124,7 @@ public class Commands {
         }
     }
 
-    public static Free<DomainOps, ?> unknown(Command command) {
+    public static Free<DomainOps, Void> unknown(Command command) {
         return PrinterOps.println(Optional.of("Unknown command " + command.line));
     }
 
