@@ -5,4 +5,10 @@ package org.codecop.socialnetworking;
  */
 abstract class DomainOps {
 
+    @Override
+    public String toString() {
+        // debugging
+        return "DomainOps " + getClass().getSimpleName();
+    }
+
 }

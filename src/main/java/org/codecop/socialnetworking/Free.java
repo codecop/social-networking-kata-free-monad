@@ -33,7 +33,7 @@ public /*sealed*/ abstract class Free<OPS, VALUE> {
 
     public Free<OPS, VALUE> join(Free<OPS, VALUE> other, BiFunction<VALUE, VALUE, VALUE> joiner) {
         return other.flatMap(named("outer join", otherValue -> //
-            map(named("inner join", value -> joiner.apply(value, otherValue)))));
+        map(named("inner join", value -> joiner.apply(value, otherValue)))));
     }
 
     static final class FreePure<OPS, VALUE> extends Free<OPS, VALUE> {
@@ -81,5 +81,26 @@ public /*sealed*/ abstract class Free<OPS, VALUE> {
             // debugging
             return "[" + previous + mapper + "]";
         }
+    }
+
+    static <O, V> String format(Free<O, V> free) {
+        // debugging
+        String raw = free.toString();
+        StringBuilder res = new StringBuilder();
+        int intend = 0;
+        for (char c : raw.toCharArray()) {
+            if (c == ']') {
+                intend--;
+                res.append('\n');
+                res.append("                                        ".substring(0, intend * 2));
+            }
+            res.append(c);
+            if (c == '[') {
+                intend++;
+                res.append('\n');
+                res.append("                                        ".substring(0, intend * 2));
+            }
+        }
+        return res.toString();
     }
 }

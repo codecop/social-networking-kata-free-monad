@@ -11,7 +11,7 @@ public class SocialNetwork {
     public static void main(String[] args) throws IOException {
         Free<DomainOps, ?> app = app();
 
-        System.err.println(app);
+        System.err.println("APP:\n" + Free.format(app) + "\n");
         Ex.rethrowIoException(() -> new DslVisitor().foldMap(app));
     }
 

@@ -36,15 +36,22 @@ public class F {
                 return f.apply(t);
             } catch (ClassCastException e) {
                 // debugging
-                System.err.println(e.toString() + " AT " + stack);
+                System.err.println(e.toString() + " AT " + formatStack());
                 throw e;
             }
         }
 
         @Override
         public String toString() {
-            return name.get() + " > " + stack;
+            return name.get() + " AT " + formatStack();
         }
+
+        private String formatStack() {
+            String shortName = stack.getClassName().replaceAll("^.*\\.", "");
+            return shortName + "." + stack.getMethodName() + //
+                    "(" + stack.getFileName() + ":" + stack.getLineNumber() + ")";
+        }
+
     }
 
     public static <T, R> Function<T, R> named(String name, Function<T, R> f) {
