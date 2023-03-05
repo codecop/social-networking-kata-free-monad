@@ -1,6 +1,6 @@
 package org.codecop.socialnetworking;
 
-import static org.codecop.socialnetworking.F.named;
+import static org.codecop.socialnetworking.NamedFunction.named;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -33,7 +33,7 @@ public /*sealed*/ abstract class Free<OPS, VALUE> {
 
     public Free<OPS, VALUE> join(Free<OPS, VALUE> other, BiFunction<VALUE, VALUE, VALUE> joiner) {
         return other.flatMap(named("outer join", otherValue -> //
-        map(named("inner join", value -> joiner.apply(value, otherValue)))));
+            map(named("inner join", value -> joiner.apply(value, otherValue)))));
     }
 
     static final class FreePure<OPS, VALUE> extends Free<OPS, VALUE> {
@@ -85,20 +85,20 @@ public /*sealed*/ abstract class Free<OPS, VALUE> {
 
     static <O, V> String format(Free<O, V> free) {
         // debugging
-        String raw = free.toString();
-        StringBuilder res = new StringBuilder();
+        String whitespace = "                                        ";
         int intend = 0;
-        for (char c : raw.toCharArray()) {
+        StringBuilder res = new StringBuilder();
+        for (char c : free.toString().toCharArray()) {
             if (c == ']') {
                 intend--;
                 res.append('\n');
-                res.append("                                        ".substring(0, intend * 2));
+                res.append(whitespace.substring(0, intend * 2));
             }
             res.append(c);
             if (c == '[') {
                 intend++;
                 res.append('\n');
-                res.append("                                        ".substring(0, intend * 2));
+                res.append(whitespace.substring(0, intend * 2));
             }
         }
         return res.toString();

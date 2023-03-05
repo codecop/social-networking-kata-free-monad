@@ -142,14 +142,4 @@ public class DslVisitor {
         return Timer.time();
     }
 
-    //    public /*<T>*/ Object handle(DslResult command) {
-    //        Object value = command.value;
-    //        if (value instanceof Free) {
-    //            System.err.print("nested ...");
-    //            Object result = foldMap((Free<DomainOps, ?>) value);
-    //            return Free.liftM(DslResult.of(result));
-    //        }
-    //        return value;
-    //    }
-
 }

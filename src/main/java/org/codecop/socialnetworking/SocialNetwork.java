@@ -1,10 +1,9 @@
 package org.codecop.socialnetworking;
 
-import static org.codecop.socialnetworking.F.named;
+import static org.codecop.socialnetworking.NamedFunction.named;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.function.Function;
 
 public class SocialNetwork {
 
@@ -16,13 +15,9 @@ public class SocialNetwork {
     }
 
     static Free<DomainOps, ?> app() {
-        Free<DomainOps, BufferedReader> init = initIO();
+        Free<DomainOps, BufferedReader> init = InMemoryOps.initDatabase(). // IO
+                flatMap(named("openInput", ignore -> InputOps.openInput()));
         return processInput(init);
-    }
-
-    static Free<DomainOps, BufferedReader> initIO() {
-        return InMemoryOps.initDatabase(). // IO
-                flatMap(named("openInput", ignore -> InputOps.openInput())); // IO
     }
 
     static Free<DomainOps, Void> processInput(Free<DomainOps, BufferedReader> input) {
@@ -33,20 +28,16 @@ public class SocialNetwork {
     }
 
     static Free<DomainOps, String> readLineFrom(Free<DomainOps, BufferedReader> input) {
-        Function<BufferedReader, Free<DomainOps, String>> readLine = named("readLine", InputOps::readLine); // IO
-        return input.flatMap(readLine);
+        return input.flatMap(named("readLine", InputOps::readLine)); // IO
     }
 
     static Free<DomainOps, Command> createCommand(Free<DomainOps, String> lineRead) {
-        Function<String, Free<DomainOps, Command>> timedAndCreateCommand = //
-                named("getTimedAndCreateCommand", line -> TimerOps.time(). // IO
-                        map(named("create Command", time -> new Command(line, time))));
-        return lineRead.flatMap(timedAndCreateCommand);
+        return lineRead.flatMap(named("getTimedAndCreateCommand", line -> TimerOps.time(). // IO
+                map(named("create Command", time -> new Command(line, time)))));
     }
 
     static Free<DomainOps, Void> executeCommand(Free<DomainOps, Command> command, Free<DomainOps, BufferedReader> input) {
-        Function<Command, Free<DomainOps, Void>> runCommand = named("processCommand", c -> processCommand(input, c));
-        return command.flatMap(runCommand);
+        return command.flatMap(named("processCommand", c -> processCommand(input, c)));
     }
 
     private static Free<DomainOps, Void> processCommand(Free<DomainOps, BufferedReader> input, Command command) {

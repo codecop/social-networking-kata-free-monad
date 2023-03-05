@@ -84,10 +84,6 @@ public class Commands {
     private static Free<DomainOps, Messages> queryMessagesForAllUsers(WallUsers wallUsers) {
         Stream<String> users = wallUsers.users();
         Stream<Free<DomainOps, Messages>> messages = users.map(InMemoryOps::queryMessagesFor); // IO
-        return reduce(messages);
-    }
-
-    private static Free<DomainOps, Messages> reduce(Stream<Free<DomainOps, Messages>> messages) {
         Free<DomainOps, Messages> initial = Free.pure(Messages.empty());
         return messages.reduce(initial, (a, b) -> a.join(b, Messages::join));
     }
