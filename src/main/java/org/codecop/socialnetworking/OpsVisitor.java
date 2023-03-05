@@ -1,11 +1,7 @@
 package org.codecop.socialnetworking;
 
 import java.io.BufferedReader;
-import java.util.Objects;
 
-import org.codecop.socialnetworking.Free.FreeFlatMap;
-import org.codecop.socialnetworking.Free.FreePure;
-import org.codecop.socialnetworking.Free.FreeSuspend;
 import org.codecop.socialnetworking.InMemoryOps.InitDatabase;
 import org.codecop.socialnetworking.InMemoryOps.QueryMessages;
 import org.codecop.socialnetworking.InMemoryOps.QueryWall;
@@ -16,40 +12,7 @@ import org.codecop.socialnetworking.InputOps.ReadStdIn;
 import org.codecop.socialnetworking.PrinterOps.Println;
 import org.codecop.socialnetworking.TimerOps.GetTime;
 
-public class DslVisitor {
-
-    public Object foldMap(Free<DomainOps, ?> free) {
-        Objects.requireNonNull(free);
-
-        if (free instanceof FreePure) {
-            return handle((FreePure<DomainOps, ?>) free);
-        }
-        if (free instanceof FreeSuspend) {
-            return handle((FreeSuspend<DomainOps, ?>) free);
-        }
-        if (free instanceof FreeFlatMap) {
-            return handle((FreeFlatMap<DomainOps, ?, ?>) free);
-        }
-
-        throw new IllegalArgumentException(free.getClass().getName());
-    }
-
-    public Object handle(FreeFlatMap free) {
-        Object previous = foldMap(free.previous);
-        System.err.println("evaluating " + free.toString());
-        Free<DomainOps, ?> current = (Free<DomainOps, ?>) free.mapper.apply(previous);
-        return foldMap(current);
-    }
-
-    public Object handle(FreeSuspend<DomainOps, ?> free) {
-        System.err.println("evaluating " + free.toString());
-        return natTrans(free.ops);
-    }
-
-    public Object handle(FreePure<DomainOps, ?> free) {
-        System.err.println("evaluating " + free.toString());
-        return free.value;
-    }
+public class OpsVisitor {
 
     public Object natTrans(DomainOps command) {
         // InMemory

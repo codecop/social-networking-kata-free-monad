@@ -36,6 +36,8 @@ public /*sealed*/ abstract class Free<OPS, VALUE> {
             map(named("inner join", value -> joiner.apply(value, otherValue)))));
     }
 
+    public abstract <X> X foldMap(Function<OPS, X> natTrans);
+    
     static final class FreePure<OPS, VALUE> extends Free<OPS, VALUE> {
 
         final VALUE value;
@@ -48,6 +50,12 @@ public /*sealed*/ abstract class Free<OPS, VALUE> {
         public String toString() {
             // debugging
             return String.valueOf(value);
+        }
+
+        @Override
+        public <X> X foldMap(Function<OPS, X> natTrans) {
+            System.err.println("evaluating " + toString());
+            return (X) value; // ? probably not
         }
     }
 
@@ -63,6 +71,12 @@ public /*sealed*/ abstract class Free<OPS, VALUE> {
         public String toString() {
             // debugging
             return "[" + ops + "]";
+        }
+
+        @Override
+        public <X> X foldMap(Function<OPS, X> natTrans) {
+            System.err.println("evaluating " + toString());
+            return natTrans.apply(ops);
         }
     }
 
@@ -80,6 +94,14 @@ public /*sealed*/ abstract class Free<OPS, VALUE> {
         public String toString() {
             // debugging
             return "[" + previous + mapper + "]";
+        }
+
+        @Override
+        public <X> X foldMap(Function<OPS, X> natTrans) {
+            X p = previous.foldMap(natTrans);
+            System.err.println("evaluating " + toString());
+            Free<OPS, ?> current = mapper.apply((V) p); // ? probably not
+            return current.foldMap(natTrans);
         }
     }
 
@@ -103,4 +125,5 @@ public /*sealed*/ abstract class Free<OPS, VALUE> {
         }
         return res.toString();
     }
+
 }

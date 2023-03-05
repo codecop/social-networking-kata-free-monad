@@ -11,7 +11,7 @@ public class SocialNetwork {
         Free<DomainOps, ?> app = app();
 
         System.err.println("APP:\n" + Free.format(app) + "\n");
-        Ex.rethrowIoException(() -> new DslVisitor().foldMap(app));
+        Ex.rethrowIoException(() -> app.foldMap(new OpsVisitor()::natTrans));
     }
 
     static Free<DomainOps, ?> app() {
