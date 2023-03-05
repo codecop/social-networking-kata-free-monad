@@ -26,18 +26,18 @@ public class Input {
 
 interface InputOps {
 
-    static Free<DslCommand, BufferedReader> openInput() {
-        return Free.liftF(new OpenStdIn());
+    static Free<DomainOps, BufferedReader> openInput() {
+        return Free.liftM(new OpenStdIn());
     }
 
-    static class OpenStdIn extends DslCommand {
+    static class OpenStdIn extends DomainOps {
     }
 
-    static Free<DslCommand, String> readLine(BufferedReader in) {
-        return Free.liftF(new ReadStdIn(in));
+    static Free<DomainOps, String> readLine(BufferedReader in) {
+        return Free.liftM(new ReadStdIn(in));
     }
 
-    static class ReadStdIn extends DslCommand {
+    static class ReadStdIn extends DomainOps {
         final BufferedReader in;
 
         public ReadStdIn(BufferedReader in) {

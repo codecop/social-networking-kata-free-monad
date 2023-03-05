@@ -15,11 +15,12 @@ public class Timer {
 
 interface TimerOps {
 
-    static Free<DslCommand, Long> time() {
-        return Free.liftF(new GetTime());
+    // "smart" constructors
+    static Free<DomainOps, Long> time() {
+        return Free.liftM(new GetTime());
     }
 
-    static class GetTime extends DslCommand {
+    static class GetTime extends DomainOps {
     }
 
 }

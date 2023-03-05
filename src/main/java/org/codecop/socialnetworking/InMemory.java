@@ -54,18 +54,18 @@ public class InMemory {
 
 interface InMemoryOps {
 
-    static Free<DslCommand, Void> initDatabase() {
-        return Free.liftF(new InitDatabase());
+    static Free<DomainOps, Void> initDatabase() {
+        return Free.liftM(new InitDatabase());
     }
 
-    static class InitDatabase extends DslCommand {
+    static class InitDatabase extends DomainOps {
     }
 
-    static Free<DslCommand, Messages> queryMessagesFor(String user) {
-        return Free.liftF(new QueryMessages(user));
+    static Free<DomainOps, Messages> queryMessagesFor(String user) {
+        return Free.liftM(new QueryMessages(user));
     }
 
-    static class QueryMessages extends DslCommand {
+    static class QueryMessages extends DomainOps {
         final String user;
 
         public QueryMessages(String user) {
@@ -79,11 +79,11 @@ interface InMemoryOps {
         }
     }
 
-    static Free<DslCommand, Void> save(Message message) {
-        return Free.liftF(new SaveMessages(message));
+    static Free<DomainOps, Void> save(Message message) {
+        return Free.liftM(new SaveMessages(message));
     }
 
-    static class SaveMessages extends DslCommand {
+    static class SaveMessages extends DomainOps {
         final Message message;
 
         public SaveMessages(Message message) {
@@ -97,11 +97,11 @@ interface InMemoryOps {
         }
     }
 
-    static Free<DslCommand, WallUsers> queryWallUsersFor(String user) {
-        return Free.liftF(new QueryWall(user));
+    static Free<DomainOps, WallUsers> queryWallUsersFor(String user) {
+        return Free.liftM(new QueryWall(user));
     }
 
-    static class QueryWall extends DslCommand {
+    static class QueryWall extends DomainOps {
         final String user;
 
         public QueryWall(String user) {
@@ -115,11 +115,11 @@ interface InMemoryOps {
         }
     }
 
-    static Free<DslCommand, Void> saveFollowingFor(String user, String other) {
-        return Free.liftF(new SaveFollowing(user, other));
+    static Free<DomainOps, Void> saveFollowingFor(String user, String other) {
+        return Free.liftM(new SaveFollowing(user, other));
     }
 
-    static class SaveFollowing extends DslCommand {
+    static class SaveFollowing extends DomainOps {
         final String user;
         final String other;
 

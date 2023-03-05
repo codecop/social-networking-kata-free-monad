@@ -12,11 +12,11 @@ public class Printer {
 
 interface PrinterOps {
 
-    public static Free<DslCommand, Void> println(Optional<String> text) {
-        return Free.liftF(new Println(text));
+    public static Free<DomainOps, Void> println(Optional<String> text) {
+        return Free.liftM(new Println(text));
     }
 
-    static class Println extends DslCommand {
+    static class Println extends DomainOps {
         final Optional<String> text;
 
         public Println(Optional<String> text) {

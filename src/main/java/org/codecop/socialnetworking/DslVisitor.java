@@ -3,8 +3,9 @@ package org.codecop.socialnetworking;
 import java.io.BufferedReader;
 import java.util.Objects;
 
-import org.codecop.socialnetworking.Free.FreeFlatMapped;
-import org.codecop.socialnetworking.Free.FreeValue;
+import org.codecop.socialnetworking.Free.FreeFlatMap;
+import org.codecop.socialnetworking.Free.FreePure;
+import org.codecop.socialnetworking.Free.FreeSuspend;
 import org.codecop.socialnetworking.InMemoryOps.InitDatabase;
 import org.codecop.socialnetworking.InMemoryOps.QueryMessages;
 import org.codecop.socialnetworking.InMemoryOps.QueryWall;
@@ -17,32 +18,40 @@ import org.codecop.socialnetworking.TimerOps.GetTime;
 
 public class DslVisitor {
 
-    public Object handleFree(Free<DslCommand, ?> free) {
+    public Object foldMap(Free<DomainOps, ?> free) {
         Objects.requireNonNull(free);
 
-        if (free instanceof FreeFlatMapped) {
-            return handle((FreeFlatMapped<DslCommand, ?, DslCommand, ?>) free);
+        if (free instanceof FreeFlatMap) {
+            return handle((FreeFlatMap<DomainOps, ?, DomainOps, ?>) free);
         }
-        if (free instanceof FreeValue) {
-            return handle((FreeValue<DslCommand, ?>) free);
+        if (free instanceof FreeSuspend) {
+            return handle((FreeSuspend<DomainOps, ?>) free);
+        }
+        if (free instanceof FreePure) {
+            return handle((FreePure<DomainOps, ?>) free);
         }
 
         throw new IllegalArgumentException(free.getClass().getName());
     }
 
-    public Object handle(FreeFlatMapped<DslCommand, ?, DslCommand, ?> free) {
-        Object previous = handleFree(free.previous);
+    public Object handle(FreeFlatMap free) {
+        Object previous = foldMap(free.previous);
         System.err.println("evaluating " + free.toString());
-        Free<DslCommand, ?> current = free.mapper.apply(DslResult.of(previous));
-        return handleFree(current);
+        Free<DomainOps, ?> current = (Free<DomainOps, ?>) free.mapper.apply(previous);
+        return foldMap(current);
     }
 
-    public Object handle(FreeValue<DslCommand, ?> free) {
+    public Object handle(FreeSuspend<DomainOps, ?> free) {
         System.err.println("evaluating " + free.toString());
-        return handleCommand(free.transformable);
+        return foldMap(free.ops);
     }
 
-    public Object handleCommand(DslCommand command) {
+    public Object handle(FreePure<DomainOps, ?> free) {
+        System.err.println("evaluating " + free.toString());
+        return free.value;
+    }
+
+    public Object foldMap(DomainOps command) {
         // InMemory
         if (command instanceof InitDatabase) {
             return handle((InitDatabase) command);
@@ -76,10 +85,6 @@ public class DslVisitor {
         // Timer
         if (command instanceof GetTime) {
             return handle((GetTime) command);
-        }
-
-        if (command instanceof DslResult) {
-            return handle((DslResult) command);
         }
 
         throw new IllegalArgumentException(command.getClass().getName());
@@ -137,14 +142,14 @@ public class DslVisitor {
         return Timer.time();
     }
 
-    public /*<T>*/ Object handle(DslResult command) {
-        Object value = command.value;
-        if (value instanceof Free) {
-            System.err.print("nested ...");
-            Object result = handleFree((Free<DslCommand, ?>) value);
-            return Free.liftF(DslResult.of(result));
-        }
-        return value;
-    }
+//    public /*<T>*/ Object handle(DslResult command) {
+//        Object value = command.value;
+//        if (value instanceof Free) {
+//            System.err.print("nested ...");
+//            Object result = foldMap((Free<DomainOps, ?>) value);
+//            return Free.liftM(DslResult.of(result));
+//        }
+//        return value;
+//    }
 
 }

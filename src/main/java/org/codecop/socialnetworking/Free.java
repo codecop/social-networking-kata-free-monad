@@ -8,80 +8,78 @@ import java.util.function.Function;
 import org.codecop.socialnetworking.F.HigherMap;
 
 /**
- * Simplified Free Monad.
+ * Free Monad. This is a library class.
  * 
- * @See "https://medium.com/modernnerd-code/dsls-with-the-free-monad-in-java-8-part-i-701408e874f8"
+ * @See "https://blog.rockthejvm.com/free-monad"
  */
-public abstract class Free<TRANSFORMABLE, VALUE> {
+public /*sealed*/ abstract class Free<OPS, VALUE> {
 
-    public static <T, V> Free<T, V> liftF(T transformable) {
-        return new FreeValue<>(transformable);
+    public static <O, V> Free<O, V> of(V value) {
+        return new FreePure<>(value);
     }
 
-    /**
-     * Shortcut for flatMap/map
-     */
-    public <RV> Free<TRANSFORMABLE, RV> mapF(Function<VALUE, RV> mapper) {
-        return flatMap(named(mapper, t -> {
-            TRANSFORMABLE mapped = fromFunctor(asFunctor(t).map(mapper));
-            return Free.<TRANSFORMABLE, RV>liftF(mapped);
-        }));
+    public static <O, V> Free<O, V> liftM(O ops) {
+        return new FreeSuspend<>(ops);
     }
 
-    private Transformable asFunctor(TRANSFORMABLE t) {
-        // assume TRANSFORMABLE of VALUE is a Transformable<VALUE> 
-        return (Transformable) t;
+    public <RV> Free<OPS, RV> map(Function<VALUE, RV> mapper) {
+        return flatMap(named(mapper, t -> Free.of(mapper.apply(t))));
     }
 
-    @SuppressWarnings("unchecked")
-    private TRANSFORMABLE fromFunctor(Transformable t) {
-        // assume Transformable<RV> is a TRANSFORMABLE of RV 
-        return (TRANSFORMABLE) t;
-    }
-
-    public <R, RV> Free<R, RV> flatMap(HigherMap<? super TRANSFORMABLE, VALUE, Free<R, RV>, RV> mapper) {
+    // TODO later, flatmap changes V->RV but OPS stays the same
+    public <RV> Free<OPS, RV> flatMap(HigherMap<OPS, VALUE, OPS, Free<OPS, RV>> mapper) {
         // this is a value. the mapper will "mapper.apply(this.transformable)"
         // so we need to create a tree now because the old value will need evaluation
         // and the flatMap result will need evaluation.
-        return new FreeFlatMapped<>(this, mapper);
+        return new FreeFlatMap<>(this, mapper);
     }
 
-    @SuppressWarnings("unchecked")
-    public Free<TRANSFORMABLE, VALUE> join(Free<TRANSFORMABLE, VALUE> other, BiFunction<VALUE, VALUE, VALUE> joiner) {
-        return other.flatMap(named("outer join", otherT -> //
-            flatMap(named("inner join", t -> //
-                Free.liftF(fromFunctor(asFunctor(t).flatMap(value -> //
-                    asFunctor(otherT).map(otherValue -> //
-                        joiner.apply((VALUE) value, (VALUE) otherValue)))))))));
+    public Free<OPS, VALUE> join(Free<OPS, VALUE> other, BiFunction<VALUE, VALUE, VALUE> joiner) {
+        HigherMap<OPS, VALUE, OPS, Free<OPS, VALUE>> m1 = (VALUE otherValue) -> //
+        {
+            Function<VALUE, VALUE> m2 = (VALUE value) -> //
+            joiner.apply(value, otherValue);
+            return this.map(m2);
+        };
+        return other.flatMap(named("outer join", m1));
     }
 
-    static class FreeValue<TRANSFORMABLE, VALUE> extends Free<TRANSFORMABLE, VALUE> {
+    static final class FreePure<OPS, VALUE> extends Free<OPS, VALUE> {
 
-        final TRANSFORMABLE transformable;
+        final VALUE value;
 
-        /**
-         * @param transformable a Transformable of some type.
-         */
-        private FreeValue(TRANSFORMABLE transformable) {
-            if (!(transformable instanceof Transformable)) {
-                throw new ClassCastException(transformable.getClass().getName());
-            }
-            this.transformable = transformable;
+        private FreePure(VALUE value) {
+            this.value = value;
         }
 
         @Override
         public String toString() {
             // debugging
-            return "[" + transformable + "]";
+            return String.valueOf(value);
         }
     }
 
-    static class FreeFlatMapped<T, TV, R, RV> extends Free<R, RV> {
+    static final class FreeSuspend<OPS, VALUE> extends Free<OPS, VALUE> {
+
+        final OPS ops;
+
+        private FreeSuspend(OPS ops) {
+            this.ops = ops;
+        }
+
+        @Override
+        public String toString() {
+            // debugging
+            return "[" + ops + "]";
+        }
+    }
+
+    static final class FreeFlatMap<T, TV, R, RV> extends Free<R, RV> {
 
         final Free<T, TV> previous;
-        final HigherMap<? super T, TV, Free<R, RV>, RV> mapper;
+        final HigherMap<? super T, TV, R, Free<R, RV>> mapper;
 
-        private FreeFlatMapped(Free<T, TV> previous, HigherMap<? super T, TV, Free<R, RV>, RV> mapper) {
+        private FreeFlatMap(Free<T, TV> previous, HigherMap<? super T, TV, R, Free<R, RV>> mapper) {
             this.previous = previous;
             this.mapper = mapper;
         }
@@ -92,13 +90,4 @@ public abstract class Free<TRANSFORMABLE, VALUE> {
             return "[" + previous + mapper + "]";
         }
     }
-}
-
-/**
- * Functor. To have "reduce", need a Monad.
- */
-interface Transformable {
-    <T, R> Transformable map(Function<? super T, ? extends R> mapper);
-
-    <T> Transformable flatMap(Function<? super T, ? extends Transformable> mapper);
 }
