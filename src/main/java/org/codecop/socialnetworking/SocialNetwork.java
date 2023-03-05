@@ -66,7 +66,7 @@ public class SocialNetwork {
 
     private static Free<DomainOps, ?> processCommand(Free<DomainOps, BufferedReader> input, Command command) {
         if ("quit".equalsIgnoreCase(command.line)) {
-            return Free.of(null);
+            return Free.pure(null);
         }
 
         Free<DomainOps, ?> result = Commands.handle(command);

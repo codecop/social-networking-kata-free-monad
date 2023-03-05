@@ -5,8 +5,6 @@ import static org.codecop.socialnetworking.F.named;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import org.codecop.socialnetworking.F.HigherMap;
-
 /**
  * Free Monad. This is a library class.
  * 
@@ -14,7 +12,7 @@ import org.codecop.socialnetworking.F.HigherMap;
  */
 public /*sealed*/ abstract class Free<OPS, VALUE> {
 
-    public static <O, V> Free<O, V> of(V value) {
+    public static <O, V> Free<O, V> pure(V value) {
         return new FreePure<>(value);
     }
 
@@ -23,25 +21,19 @@ public /*sealed*/ abstract class Free<OPS, VALUE> {
     }
 
     public <RV> Free<OPS, RV> map(Function<VALUE, RV> mapper) {
-        return flatMap(named(mapper, t -> Free.of(mapper.apply(t))));
+        return flatMap(named(mapper, t -> Free.pure(mapper.apply(t))));
     }
 
-    // TODO later, flatmap changes V->RV but OPS stays the same
-    public <RV> Free<OPS, RV> flatMap(HigherMap<OPS, VALUE, OPS, Free<OPS, RV>> mapper) {
-        // this is a value. the mapper will "mapper.apply(this.transformable)"
+    public <RV> Free<OPS, RV> flatMap(Function<VALUE, Free<OPS, RV>> mapper) {
+        // this is a value. the mapper will "mapper.apply"
         // so we need to create a tree now because the old value will need evaluation
         // and the flatMap result will need evaluation.
         return new FreeFlatMap<>(this, mapper);
     }
 
     public Free<OPS, VALUE> join(Free<OPS, VALUE> other, BiFunction<VALUE, VALUE, VALUE> joiner) {
-        HigherMap<OPS, VALUE, OPS, Free<OPS, VALUE>> m1 = (VALUE otherValue) -> //
-        {
-            Function<VALUE, VALUE> m2 = (VALUE value) -> //
-            joiner.apply(value, otherValue);
-            return this.map(m2);
-        };
-        return other.flatMap(named("outer join", m1));
+        return other.flatMap(named("outer join", otherValue -> //
+            map(named("inner join", value -> joiner.apply(value, otherValue)))));
     }
 
     static final class FreePure<OPS, VALUE> extends Free<OPS, VALUE> {
@@ -74,12 +66,12 @@ public /*sealed*/ abstract class Free<OPS, VALUE> {
         }
     }
 
-    static final class FreeFlatMap<T, TV, R, RV> extends Free<R, RV> {
+    static final class FreeFlatMap<OPS, V, RV> extends Free<OPS, RV> {
 
-        final Free<T, TV> previous;
-        final HigherMap<? super T, TV, R, Free<R, RV>> mapper;
+        final Free<OPS, V> previous;
+        final Function<V, Free<OPS, RV>> mapper;
 
-        private FreeFlatMap(Free<T, TV> previous, HigherMap<? super T, TV, R, Free<R, RV>> mapper) {
+        private FreeFlatMap(Free<OPS, V> previous, Function<V, Free<OPS, RV>> mapper) {
             this.previous = previous;
             this.mapper = mapper;
         }

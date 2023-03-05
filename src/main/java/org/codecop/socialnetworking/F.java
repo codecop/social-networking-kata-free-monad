@@ -4,17 +4,17 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- * Functional debug helpers.
+ * Function debug helpers.
  */
 public class F {
 
-    private static final class NamedFunction<T, TV, R, RV> implements HigherMap<T, TV, R, RV> {
+    private static final class NamedFunction<T, R> implements Function<T, R> {
 
         private final Supplier<String> name;
-        private final Function<TV, RV> f;
+        private final Function<T, R> f;
         private final StackTraceElement stack;
 
-        private NamedFunction(Supplier<String> name, Function<TV, RV> f) {
+        private NamedFunction(Supplier<String> name, Function<T, R> f) {
             this.name = name;
             this.f = f;
             this.stack = getTrace();
@@ -31,10 +31,11 @@ public class F {
         }
 
         @Override
-        public RV apply(TV t) {
+        public R apply(T t) {
             try {
                 return f.apply(t);
             } catch (ClassCastException e) {
+                // debugging
                 System.err.println(e.toString() + " AT " + stack);
                 throw e;
             }
@@ -46,13 +47,7 @@ public class F {
         }
     }
 
-    @SuppressWarnings("unused")
-    interface HigherMap<T, TV, R, RV> extends Function<TV, RV> {
-        @Override
-        RV apply(TV t);
-    }
-
-    public static <T, TV, R, RV> HigherMap<T, TV, R, RV> named(String name, HigherMap<T, TV, R, RV> f) {
+    public static <T, R> Function<T, R> named(String name, Function<T, R> f) {
         if (f instanceof NamedFunction) {
             return f;
         }
@@ -63,7 +58,7 @@ public class F {
         return new NamedFunction<>(() -> " mapped by " + name, f);
     }
 
-    public static <T, TV, R, RV> HigherMap<T, TV, R, RV> named(Function<TV, ?> innerMapper, HigherMap<T, TV, R, RV> f) {
+    public static <T, R> Function<T, R> named(Function<?, ?> innerMapper, Function<T, R> f) {
         if (f instanceof NamedFunction) {
             return f;
         }

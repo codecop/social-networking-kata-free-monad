@@ -91,7 +91,7 @@ public class Commands {
     }
 
     private static Free<DomainOps, Messages> reduce(Stream<Free<DomainOps, Messages>> messages) {
-        Free<DomainOps, Messages> initial = Free.of(Messages.empty());
+        Free<DomainOps, Messages> initial = Free.pure(Messages.empty());
         return messages.reduce(initial, (a, b) -> a.join(b, Messages::join));
     }
 

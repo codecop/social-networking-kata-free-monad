@@ -21,14 +21,14 @@ public class DslVisitor {
     public Object foldMap(Free<DomainOps, ?> free) {
         Objects.requireNonNull(free);
 
-        if (free instanceof FreeFlatMap) {
-            return handle((FreeFlatMap<DomainOps, ?, DomainOps, ?>) free);
+        if (free instanceof FreePure) {
+            return handle((FreePure<DomainOps, ?>) free);
         }
         if (free instanceof FreeSuspend) {
             return handle((FreeSuspend<DomainOps, ?>) free);
         }
-        if (free instanceof FreePure) {
-            return handle((FreePure<DomainOps, ?>) free);
+        if (free instanceof FreeFlatMap) {
+            return handle((FreeFlatMap<DomainOps, ?, ?>) free);
         }
 
         throw new IllegalArgumentException(free.getClass().getName());
@@ -43,7 +43,7 @@ public class DslVisitor {
 
     public Object handle(FreeSuspend<DomainOps, ?> free) {
         System.err.println("evaluating " + free.toString());
-        return foldMap(free.ops);
+        return natTrans(free.ops);
     }
 
     public Object handle(FreePure<DomainOps, ?> free) {
@@ -51,7 +51,7 @@ public class DslVisitor {
         return free.value;
     }
 
-    public Object foldMap(DomainOps command) {
+    public Object natTrans(DomainOps command) {
         // InMemory
         if (command instanceof InitDatabase) {
             return handle((InitDatabase) command);
@@ -142,14 +142,14 @@ public class DslVisitor {
         return Timer.time();
     }
 
-//    public /*<T>*/ Object handle(DslResult command) {
-//        Object value = command.value;
-//        if (value instanceof Free) {
-//            System.err.print("nested ...");
-//            Object result = foldMap((Free<DomainOps, ?>) value);
-//            return Free.liftM(DslResult.of(result));
-//        }
-//        return value;
-//    }
+    //    public /*<T>*/ Object handle(DslResult command) {
+    //        Object value = command.value;
+    //        if (value instanceof Free) {
+    //            System.err.print("nested ...");
+    //            Object result = foldMap((Free<DomainOps, ?>) value);
+    //            return Free.liftM(DslResult.of(result));
+    //        }
+    //        return value;
+    //    }
 
 }
